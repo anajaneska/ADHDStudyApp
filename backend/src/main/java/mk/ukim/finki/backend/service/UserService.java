@@ -9,6 +9,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class UserService {
     @Autowired
@@ -31,5 +33,13 @@ public class UserService {
             return jwtService.generateToken(user.getUsername());
         }
         return "fail";
+    }
+
+    public Optional<User> getUserById(Long id) {
+        return repo.findById(id);
+    }
+
+    public User findByUsername(String username) {
+        return repo.findByUsername(username);
     }
 }
