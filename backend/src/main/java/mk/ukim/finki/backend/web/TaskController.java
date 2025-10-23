@@ -54,7 +54,7 @@ public class TaskController {
     @PutMapping("/{id}/complete")
     public Task completeTask(@PathVariable Long id) {
         return taskService.getTaskById(id).map(task -> {
-            task.setCompleted(true);  // mark task as completed
+            task.setCompleted(!task.isCompleted());  // mark task as completed
             return taskService.saveTask(task);
         }).orElseThrow(() -> new RuntimeException("Task not found"));
     }
