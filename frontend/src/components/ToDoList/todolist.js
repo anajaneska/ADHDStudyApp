@@ -11,17 +11,17 @@ export default function ToDoList() {
     plannedStart: ""
   });
 
-  // ✅ Get userId from localStorage
+  // ✅ Widget drag state
+  const [position, setPosition] = useState({ x: 100, y: 100 });
+  const [isDragging, setIsDragging] = useState(false);
+
+  // ✅ Get userId and token
   const userId = localStorage.getItem("userId");
   const token = localStorage.getItem("jwt");
 
-  // ✅ Fetch tasks for this user
+  // ✅ Fetch tasks
   const fetchTasks = async () => {
-    if (!userId) {
-      console.error("User ID not found in localStorage");
-      return;
-    }
-
+    if (!userId) return console.error("User ID not found in localStorage");
     try {
       const res = await instance.get(`/tasks/${userId}`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -36,34 +36,27 @@ export default function ToDoList() {
     fetchTasks();
   }, [userId]);
 
-  // ✅ Add a new task
+  // ✅ Add task
   const addTask = async () => {
-    if (!userId) {
-      console.error("User ID not found in localStorage");
-      return;
-    }
-    if (!newTask.title.trim()) return;
-
+    if (!userId || !newTask.title.trim()) return;
     try {
       await instance.post(`/tasks/${userId}`, newTask, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setNewTask({ title: "", description: "", dueDate: "", plannedStart: "" });
-      fetchTasks(); // reload tasks after adding
+      fetchTasks();
     } catch (error) {
       console.error("Error adding task:", error);
     }
   };
 
-  // ✅ Toggle completion
+  // ✅ Toggle complete
   const toggleComplete = async (id) => {
     try {
       const res = await instance.put(`/tasks/${id}/complete`, null, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setTasks((prev) =>
-        prev.map((t) => (t.id === id ? res.data : t))
-      );
+      setTasks((prev) => prev.map((t) => (t.id === id ? res.data : t)));
     } catch (err) {
       console.error("Error completing task:", err);
     }
@@ -81,9 +74,44 @@ export default function ToDoList() {
     }
   };
 
+  // ✅ Drag handlers
+  const handleMouseDown = (e) => {
+    setIsDragging(true);
+    const shiftX = e.clientX - position.x;
+    const shiftY = e.clientY - position.y;
+
+    const onMouseMove = (event) => {
+      setPosition({
+        x: event.clientX - shiftX,
+        y: event.clientY - shiftY
+      });
+    };
+
+    const onMouseUp = () => {
+      setIsDragging(false);
+      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseup", onMouseUp);
+    };
+
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseup", onMouseUp);
+  };
+
   return (
-    <div className="p-6 bg-white rounded-2xl shadow-lg">
-      <h2 className="text-xl font-bold mb-4">To-Do List</h2>
+    <div
+      onMouseDown={handleMouseDown}
+      style={{
+        position: "fixed",
+        top: position.y,
+        left: position.x,
+        cursor: isDragging ? "grabbing" : "grab",
+        userSelect: "none",
+        zIndex: 1000,
+        transition: isDragging ? "none" : "transform 0.2s ease"
+      }}
+      className="p-6 bg-white rounded-2xl shadow-2xl w-80 select-none"
+    >
+      <h2 className="text-xl font-bold mb-4 text-center">To-Do List</h2>
 
       <div className="mb-4 flex gap-2">
         <input
@@ -91,9 +119,7 @@ export default function ToDoList() {
           placeholder="Task title"
           className="border p-2 rounded flex-1"
           value={newTask.title}
-          onChange={(e) =>
-            setNewTask({ ...newTask, title: e.target.value })
-          }
+          onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
         />
         <input
           type="datetime-local"
@@ -105,7 +131,7 @@ export default function ToDoList() {
         />
         <button
           onClick={addTask}
-          className="bg-blue-600 text-white px-4 py-2 rounded"
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
         >
           Add
         </button>
@@ -126,9 +152,7 @@ export default function ToDoList() {
                 checked={t.completed}
                 onChange={() => toggleComplete(t.id)}
               />
-              <span
-                className={t.completed ? "line-through ml-2" : "ml-2"}
-              >
+              <span className={t.completed ? "line-through ml-2" : "ml-2"}>
                 {t.title}{" "}
                 {t.plannedStart &&
                   `(${dayjs(t.plannedStart).format("DD/MM HH:mm")})`}
@@ -136,7 +160,7 @@ export default function ToDoList() {
             </div>
             <button
               onClick={() => deleteTask(t.id)}
-              className="text-red-500"
+              className="text-red-500 hover:text-red-700"
             >
               Delete
             </button>
