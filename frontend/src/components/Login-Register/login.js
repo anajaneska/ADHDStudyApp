@@ -11,41 +11,47 @@ export default function Login() {
     e.preventDefault();
     try {
       const response = await instance.post('/auth/login', form);
-      const token = response.data;
-      console.log("Received JWT token:", token);
+      const { token, userId, username } = response.data;
 
+      if (!token || !userId) {
+        throw new Error("Invalid login response: missing token or userId");
+      }
+
+      // Store data in localStorage
       localStorage.setItem('jwt', token);
-      alert("Logged in successfully");
-      navigate(`/`);
+      localStorage.setItem('userId', userId);
+      localStorage.setItem('username', username);
+
+      console.log("Logged in successfully:", { username, userId });
 
       setForm({ username: '', password: '' });
+      navigate(`/`);
     } catch (err) {
-      alert("Login failed");
       console.error("Login error:", err);
+      alert("Login failed. Please check your credentials.");
     }
   };
 
   return (
-    <div className={'container px-6'}>
-     <h2 className={'my-3'}>Login</h2>
-    <form onSubmit={handleSubmit}>
-
-      <input
-        type="text"
-        placeholder="Username"
-        value={form.username}
-        onChange={(e) => setForm({ ...form, username: e.target.value })}
-        required
-      />
-      <input
-        type="password"
-        placeholder="Password"
-        value={form.password}
-        onChange={(e) => setForm({ ...form, password: e.target.value })}
-        required
-      />
-      <button type="submit">Login</button>
-    </form>
+    <div className="container px-6">
+      <h2 className="my-3">Login</h2>
+      <form onSubmit={handleSubmit}>
+        <input
+          type="text"
+          placeholder="Username"
+          value={form.username}
+          onChange={(e) => setForm({ ...form, username: e.target.value })}
+          required
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={form.password}
+          onChange={(e) => setForm({ ...form, password: e.target.value })}
+          required
+        />
+        <button type="submit">Login</button>
+      </form>
     </div>
   );
 }
