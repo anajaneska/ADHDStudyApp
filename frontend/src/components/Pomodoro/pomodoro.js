@@ -6,8 +6,10 @@ const PomodoroTimer = () => {
   const [timeLeft, setTimeLeft] = useState(25 * 60);
   const [isRunning, setIsRunning] = useState(false);
   const [cycle, setCycle] = useState("work");
+  const [position, setPosition] = useState({ x: 50, y: 50 });
+  const [isDragging, setIsDragging] = useState(false);
 
-  // 🔹 Декодирање на JWT токенот
+  // Decode JWT
   useEffect(() => {
     const token = localStorage.getItem("jwt");
     if (token) {
@@ -20,10 +22,9 @@ const PomodoroTimer = () => {
     }
   }, []);
 
-  // 🔹 Клуч по корисник
   const storageKey = `pomodoro_${username}`;
 
-  // 🔹 Вчитување состојба при refresh
+  // Load saved state
   useEffect(() => {
     if (!username) return;
     const saved = localStorage.getItem(storageKey);
@@ -31,7 +32,6 @@ const PomodoroTimer = () => {
       const { timeLeft, isRunning, cycle, lastUpdate, date } = JSON.parse(saved);
       const today = new Date().toDateString();
 
-      // ако е нов ден — ресетирај
       if (date && date !== today) {
         localStorage.removeItem(storageKey);
         return;
@@ -47,7 +47,7 @@ const PomodoroTimer = () => {
     }
   }, [username]);
 
-  // 🔹 Зачувување при секоја промена
+  // Save to localStorage
   useEffect(() => {
     if (!username) return;
     localStorage.setItem(
@@ -62,7 +62,7 @@ const PomodoroTimer = () => {
     );
   }, [timeLeft, isRunning, cycle, username]);
 
-  // 🔹 Паузирај при гасење/refresh
+  // Pause on unload
   useEffect(() => {
     const handleUnload = () => {
       if (!username) return;
@@ -78,7 +78,7 @@ const PomodoroTimer = () => {
     return () => window.removeEventListener("beforeunload", handleUnload);
   }, [username, storageKey]);
 
-  // 🔹 Логика на тајмерот
+  // Timer logic
   useEffect(() => {
     let timer;
     if (isRunning && timeLeft > 0) {
@@ -103,29 +103,74 @@ const PomodoroTimer = () => {
     return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
   };
 
+  // Drag functionality
+  const handleMouseDown = (e) => {
+    setIsDragging(true);
+    const shiftX = e.clientX - position.x;
+    const shiftY = e.clientY - position.y;
+
+    const onMouseMove = (event) => {
+      setPosition({
+        x: event.clientX - shiftX,
+        y: event.clientY - shiftY,
+      });
+    };
+
+    const onMouseUp = () => {
+      setIsDragging(false);
+      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseup", onMouseUp);
+    };
+
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseup", onMouseUp);
+  };
+
   if (!username) return <p>Се вчитува...</p>;
 
   return (
-    <div className="flex flex-col items-center bg-white p-6 rounded-2xl shadow-md w-80">
-      <h2 className="text-xl font-semibold mb-2">
+    <div
+      onMouseDown={handleMouseDown}
+      style={{
+        position: "fixed",
+        top: position.y,
+        left: position.x,
+        cursor: isDragging ? "grabbing" : "grab",
+        userSelect: "none",
+        transition: isDragging ? "none" : "transform 0.2s ease",
+        zIndex: 1000,
+      }}
+      className="bg-gradient-to-br from-blue-500 to-blue-700 text-white shadow-2xl rounded-2xl p-6 w-72 select-none"
+    >
+      <h2 className="text-2xl font-bold mb-2 text-center">
         {cycle === "work" ? "Фокус време" : "Пауза"}
       </h2>
-      <p className="text-4xl font-mono mb-4">{formatTime(timeLeft)}</p>
-      <div className="flex space-x-2">
+      <p className="text-5xl font-mono text-center mb-4 drop-shadow-lg">
+        {formatTime(timeLeft)}
+      </p>
+      <div className="flex justify-center space-x-3">
         <button
-          onClick={() => setIsRunning(!isRunning)}
-          className="bg-blue-500 text-white px-4 py-2 rounded-xl"
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsRunning(!isRunning);
+          }}
+          className={`px-4 py-2 rounded-xl font-semibold ${
+            isRunning
+              ? "bg-yellow-400 text-black hover:bg-yellow-500"
+              : "bg-green-400 text-black hover:bg-green-500"
+          }`}
         >
           {isRunning ? "Пауза" : "Старт"}
         </button>
         <button
-          onClick={() => {
+          onClick={(e) => {
+            e.stopPropagation();
             setIsRunning(false);
             setTimeLeft(25 * 60);
             setCycle("work");
             localStorage.removeItem(storageKey);
           }}
-          className="bg-gray-300 px-4 py-2 rounded-xl"
+          className="bg-gray-200 text-black px-4 py-2 rounded-xl hover:bg-gray-300"
         >
           Ресет
         </button>
