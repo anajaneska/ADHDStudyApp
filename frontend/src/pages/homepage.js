@@ -4,6 +4,7 @@ import ToDoList from "../components/ToDoList/todolist";
 import CalendarView from "../components/Calendar/calendar";
 import instance from "../custom-axios/axios";
 import { jwtDecode } from "jwt-decode";
+import Notes from "../components/Notes/notes";
 
 const HomePage = () => {
   const [tasks, setTasks] = useState([]);
@@ -44,6 +45,7 @@ const HomePage = () => {
           <PomodoroTimer />
           <ToDoList userId={userId} /> {/* pass userId instead of username */}
           <CalendarView tasks={tasks} />
+          <Notes userId={userId} />
         </div>
       </main>
     </div>
