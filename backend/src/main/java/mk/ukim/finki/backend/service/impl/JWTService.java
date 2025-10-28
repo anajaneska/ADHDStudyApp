@@ -1,4 +1,4 @@
-package mk.ukim.finki.backend.service;
+package mk.ukim.finki.backend.service.impl;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -18,19 +18,8 @@ public class JWTService {
     @Value("${jwt.secret}")
     private String secretKey;
 
-//    public JWTService() {
-//        try {
-//            KeyGenerator keyGenerator = KeyGenerator.getInstance("HmacSHA256");
-//            SecretKey sk = keyGenerator.generateKey();
-//            secretKey = Base64.getEncoder().encodeToString(sk.getEncoded());
-//        } catch (NoSuchAlgorithmException e) {
-//            throw new RuntimeException(e);
-//        }
-//    }
-
     public String generateToken(String username) {
         Map<String,Object> claims = new HashMap<>();
-
 
         return Jwts.builder()
                 .claims()

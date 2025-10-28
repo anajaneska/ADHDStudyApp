@@ -2,34 +2,23 @@ package mk.ukim.finki.backend.service;
 
 
 import mk.ukim.finki.backend.model.Task;
+import mk.ukim.finki.backend.model.exeptions.TaskDoesNotExistException;
 import mk.ukim.finki.backend.repository.TaskRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
-@Service
-public class TaskService {
 
-    private final TaskRepository taskRepository;
+public interface TaskService {
+    List<Task> getAllTasksForUser(Long userId);
 
-    public TaskService(TaskRepository taskRepository) {
-        this.taskRepository = taskRepository;
-    }
+    Task saveTask(Task task);
 
-    public List<Task> getAllTasksForUser(Long userId) {
-        return taskRepository.findByUserId(userId);
-    }
+    Optional<Task> getTaskById(Long id);
 
-    public Task saveTask(Task task) {
-        return taskRepository.save(task);
-    }
+    void deleteTask(Long id);
+    Task updateTask(Long id, Task updatedTask) throws TaskDoesNotExistException;
+    Task toggleTaskCompletion(Long id);
 
-    public Optional<Task> getTaskById(Long id) {
-        return taskRepository.findById(id);
-    }
-
-    public void deleteTask(Long id) {
-        taskRepository.deleteById(id);
-    }
 }

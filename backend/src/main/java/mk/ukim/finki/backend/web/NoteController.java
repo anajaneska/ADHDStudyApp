@@ -1,7 +1,9 @@
 package mk.ukim.finki.backend.web;
 
+import lombok.RequiredArgsConstructor;
 import mk.ukim.finki.backend.model.Note;
 import mk.ukim.finki.backend.model.User;
+import mk.ukim.finki.backend.model.exeptions.UserDoesNotExistException;
 import mk.ukim.finki.backend.service.NoteService;
 import mk.ukim.finki.backend.service.UserService;
 import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
@@ -13,15 +15,11 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/notes")
 @CrossOrigin(origins = "http://localhost:3000")
+@RequiredArgsConstructor
 public class NoteController {
 
     private final NoteService noteService;
     private final UserService userService;
-
-    public NoteController(NoteService noteService, UserService userService) {
-        this.noteService = noteService;
-        this.userService = userService;
-    }
 
     @GetMapping("/{userId}")
     public List<Note> getNotes(@PathVariable Long userId) {
@@ -31,19 +29,14 @@ public class NoteController {
     @PostMapping("/{userId}")
     public Note createNote(@PathVariable Long userId, @RequestBody Note note) {
         User user = userService.getUserById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserDoesNotExistException(userId));
         note.setUser(user);
-        Note savedNote = noteService.saveNote(note);
-        return savedNote;
+        return noteService.saveNote(note);
     }
 
     @PutMapping("/{id}")
     public Note updateNote(@PathVariable Long id, @RequestBody Note updatedNote) {
-        return noteService.getNoteById(id).map(note -> {
-            note.setTitle(updatedNote.getTitle());
-            note.setContent(updatedNote.getContent());
-            return noteService.saveNote(note);
-        }).orElseThrow(() -> new RuntimeException("Note not found"));
+        return noteService.updateNote(id,updatedNote);
     }
 
     @DeleteMapping("/{userId}/{id}")
