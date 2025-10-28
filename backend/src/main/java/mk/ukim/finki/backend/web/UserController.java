@@ -24,7 +24,7 @@ public class UserController {
             User createdUser = userService.register(user);
             return ResponseEntity.ok(createdUser);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().build(); // or return a proper message
+            return ResponseEntity.badRequest().build();
         }
     }
     @PostMapping("/login")
@@ -32,7 +32,7 @@ public class UserController {
         try {
             String token = userService.verify(user); // returns JWT
 
-            User loggedInUser = userService.findByUsername(user.getUsername());
+            User loggedInUser = userService.findByUsername(user.getUsername()).orElseThrow(RuntimeException::new);
             if (loggedInUser == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found");
             }

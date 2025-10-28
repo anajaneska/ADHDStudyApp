@@ -1,4 +1,4 @@
-package mk.ukim.finki.backend.service;
+package mk.ukim.finki.backend.service.impl;
 
 import mk.ukim.finki.backend.model.User;
 import mk.ukim.finki.backend.model.UserPrincipal;
@@ -16,7 +16,7 @@ public class ADHDUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = repo.findByUsername(username);
+        User user = repo.findByUsername(username).orElseThrow(RuntimeException::new);
         if(user == null){
             System.out.println("User not found");
             throw new UsernameNotFoundException("User not found");

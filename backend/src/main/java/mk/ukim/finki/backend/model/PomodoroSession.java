@@ -1,9 +1,7 @@
 package mk.ukim.finki.backend.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -17,9 +15,13 @@ public class PomodoroSession {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long userId;
-    private int focusDuration;  // во минути
-    private int breakDuration;  // во минути
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    @JsonBackReference("user-session")
+    private User user;
+
+    private int focusDuration;
+    private int breakDuration;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
     private boolean completed;

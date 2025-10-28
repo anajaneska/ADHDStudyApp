@@ -16,11 +16,9 @@ public class Note {
     private Long id;
 
     private String title;
+
     @Column(columnDefinition = "TEXT")
     private String content;
-
-    private int positionX;
-    private int positionY;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
