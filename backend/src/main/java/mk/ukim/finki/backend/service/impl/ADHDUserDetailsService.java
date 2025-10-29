@@ -16,11 +16,9 @@ public class ADHDUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = repo.findByUsername(username).orElseThrow(RuntimeException::new);
-        if(user == null){
-            System.out.println("User not found");
-            throw new UsernameNotFoundException("User not found");
-        }
+        User user = repo.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
+
         return new UserPrincipal(user);
     }
 }
