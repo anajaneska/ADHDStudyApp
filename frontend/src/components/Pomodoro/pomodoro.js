@@ -1,13 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { jwtDecode } from "jwt-decode";
 
-const PomodoroTimer = () => {
+const PomodoroTimer = ({ setFeatures }) => {
   const [username, setUsername] = useState(null);
   const [timeLeft, setTimeLeft] = useState(25 * 60);
   const [isRunning, setIsRunning] = useState(false);
   const [cycle, setCycle] = useState("work");
   const [position, setPosition] = useState({ x: 50, y: 50 });
   const [isDragging, setIsDragging] = useState(false);
+  const [workDuration, setWorkDuration] = useState(25);
+  const [breakDuration, setBreakDuration] = useState(5);
+  const [editMode, setEditMode] = useState(false);
+  const [tempWork, setTempWork] = useState(workDuration);
+  const [tempBreak, setTempBreak] = useState(breakDuration);
 
   // Decode JWT
   useEffect(() => {
@@ -62,22 +67,6 @@ const PomodoroTimer = () => {
     );
   }, [timeLeft, isRunning, cycle, username]);
 
-  // Pause on unload
-  useEffect(() => {
-    const handleUnload = () => {
-      if (!username) return;
-      const saved = localStorage.getItem(storageKey);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        parsed.isRunning = false;
-        parsed.lastUpdate = Date.now();
-        localStorage.setItem(storageKey, JSON.stringify(parsed));
-      }
-    };
-    window.addEventListener("beforeunload", handleUnload);
-    return () => window.removeEventListener("beforeunload", handleUnload);
-  }, [username, storageKey]);
-
   // Timer logic
   useEffect(() => {
     let timer;
@@ -87,15 +76,15 @@ const PomodoroTimer = () => {
       if (cycle === "work") {
         alert("Време е за пауза ☕");
         setCycle("break");
-        setTimeLeft(5 * 60);
+        setTimeLeft(breakDuration * 60);
       } else {
         alert("Време е за работа 💪");
         setCycle("work");
-        setTimeLeft(25 * 60);
+        setTimeLeft(workDuration * 60);
       }
     }
     return () => clearInterval(timer);
-  }, [isRunning, timeLeft, cycle]);
+  }, [isRunning, timeLeft, cycle, workDuration, breakDuration]);
 
   const formatTime = (seconds) => {
     const m = Math.floor(seconds / 60);
@@ -128,6 +117,21 @@ const PomodoroTimer = () => {
 
   if (!username) return <p>Се вчитува...</p>;
 
+  // Switch cycle manually
+  const switchCycle = (newCycle) => {
+    setCycle(newCycle);
+    setTimeLeft(newCycle === "work" ? workDuration * 60 : breakDuration * 60);
+    setIsRunning(false);
+  };
+
+  // Save edited durations
+  const saveEdit = () => {
+    if (tempWork > 0) setWorkDuration(tempWork);
+    if (tempBreak > 0) setBreakDuration(tempBreak);
+    switchCycle(cycle); // reset current cycle with new durations
+    setEditMode(false);
+  };
+
   return (
     <div
       onMouseDown={handleMouseDown}
@@ -140,15 +144,26 @@ const PomodoroTimer = () => {
         transition: isDragging ? "none" : "transform 0.2s ease",
         zIndex: 1000,
       }}
-      className="bg-gradient-to-br from-blue-500 to-blue-700 text-white shadow-2xl rounded-2xl p-6 w-72 select-none"
+      className="bg-gradient-to-br from-blue-500 to-blue-700 text-white shadow-2xl rounded-2xl p-6 w-72 select-none relative"
     >
+      {/* X button */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          setFeatures((prev) => ({ ...prev, pomodoro: false }));
+        }}
+        className="absolute top-2 right-2 text-red-400 font-bold text-lg hover:text-red-600"
+      >
+        ✕
+      </button>
+
       <h2 className="text-2xl font-bold mb-2 text-center">
         {cycle === "work" ? "Фокус време" : "Пауза"}
       </h2>
-      <p className="text-5xl font-mono text-center mb-4 drop-shadow-lg">
-        {formatTime(timeLeft)}
-      </p>
-      <div className="flex justify-center space-x-3">
+
+      <p className="text-5xl font-mono text-center mb-4 drop-shadow-lg">{formatTime(timeLeft)}</p>
+
+      <div className="flex justify-center space-x-3 mb-2">
         <button
           onClick={(e) => {
             e.stopPropagation();
@@ -166,7 +181,7 @@ const PomodoroTimer = () => {
           onClick={(e) => {
             e.stopPropagation();
             setIsRunning(false);
-            setTimeLeft(25 * 60);
+            setTimeLeft(workDuration * 60);
             setCycle("work");
             localStorage.removeItem(storageKey);
           }}
@@ -175,6 +190,84 @@ const PomodoroTimer = () => {
           Ресет
         </button>
       </div>
+
+      {/* Cycle switch */}
+      <div className="flex justify-center space-x-2 mb-2">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            switchCycle("work");
+          }}
+          className={`px-3 py-1 rounded-lg ${
+            cycle === "work" ? "bg-white text-black" : "bg-gray-300 text-black"
+          }`}
+        >
+          Фокус
+        </button>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            switchCycle("break");
+          }}
+          className={`px-3 py-1 rounded-lg ${
+            cycle === "break" ? "bg-white text-black" : "bg-gray-300 text-black"
+          }`}
+        >
+          Пауза
+        </button>
+      </div>
+
+      {/* Edit durations form */}
+      {editMode ? (
+        <div className="flex flex-col items-center space-y-2">
+          <input
+            type="number"
+            className="w-20 px-2 py-1 rounded text-black text-center"
+            value={tempWork}
+            onChange={(e) => setTempWork(parseInt(e.target.value))}
+            placeholder="Work min"
+          />
+          <input
+            type="number"
+            className="w-20 px-2 py-1 rounded text-black text-center"
+            value={tempBreak}
+            onChange={(e) => setTempBreak(parseInt(e.target.value))}
+            placeholder="Break min"
+          />
+          <div className="flex space-x-2">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                saveEdit();
+              }}
+              className="px-3 py-1 rounded-lg bg-green-400 hover:bg-green-500"
+            >
+              Save
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setEditMode(false);
+              }}
+              className="px-3 py-1 rounded-lg bg-red-400 hover:bg-red-500"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="flex justify-center mt-2">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setEditMode(true);
+            }}
+            className="px-3 py-1 rounded-lg bg-purple-400 hover:bg-purple-500"
+          >
+            Измени време
+          </button>
+        </div>
+      )}
     </div>
   );
 };

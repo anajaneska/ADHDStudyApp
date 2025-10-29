@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import instance from "../../custom-axios/axios";
 import dayjs from "dayjs";
 
-export default function ToDoList() {
+export default function ToDoList({ setFeatures }) {
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState({
     title: "",
@@ -31,7 +31,6 @@ export default function ToDoList() {
       const res = await instance.get(`/tasks/${userId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      console.log("Tasks fetched from backend:", res.data); 
       setTasks(res.data);
     } catch (err) {
       console.error("Error loading tasks:", err);
@@ -68,7 +67,7 @@ export default function ToDoList() {
 
   const deleteTask = async (id) => {
     try {
-      await instance.delete(`/tasks/${userId}/${id}`, {
+      await instance.delete(`/tasks/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setTasks(tasks.filter((t) => t.id !== id));
@@ -83,7 +82,9 @@ export default function ToDoList() {
       title: task.title,
       description: task.description || "",
       dueDate: task.dueDate ? dayjs(task.dueDate).format("YYYY-MM-DDTHH:mm") : "",
-      plannedStart: task.plannedStart ? dayjs(task.plannedStart).format("YYYY-MM-DDTHH:mm") : ""
+      plannedStart: task.plannedStart
+        ? dayjs(task.plannedStart).format("YYYY-MM-DDTHH:mm")
+        : ""
     });
   };
 
@@ -133,35 +134,48 @@ export default function ToDoList() {
         zIndex: 1000,
         transition: isDragging ? "none" : "transform 0.2s ease"
       }}
-      className="p-6 bg-white rounded-2xl shadow-2xl w-96 select-none"
+      className="p-5 bg-white rounded-2xl shadow-2xl w-96 select-none"
     >
-      <h2 className="text-xl font-bold mb-4 text-center">To-Do List</h2>
-
-      <div className="mb-4 flex gap-2">
-        <input
-          type="text"
-          placeholder="Task title"
-          className="border p-2 rounded flex-1"
-          value={newTask.title}
-          onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
-        />
-        <input
-          type="datetime-local"
-          className="border p-2 rounded"
-          value={newTask.plannedStart}
-          onChange={(e) =>
-            setNewTask({ ...newTask, plannedStart: e.target.value })
-          }
-        />
+      {/* Header with close X */}
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-bold">To-Do List</h2>
         <button
-          onClick={addTask}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          onClick={() => setFeatures(prev => ({ ...prev, todo: false }))}
+          className="text-red-500 font-bold text-xl hover:text-red-700"
         >
-          Add
+          ✕
         </button>
       </div>
 
-      <ul>
+      {/* New Task Form */}
+      <div className="mb-4 flex flex-col gap-2">
+        <div className="flex gap-2">
+          <input
+            type="text"
+            placeholder="Task title"
+            className="border p-2 rounded flex-1"
+            value={newTask.title}
+            onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+          />
+          <input
+            type="datetime-local"
+            className="border p-2 rounded"
+            value={newTask.plannedStart}
+            onChange={(e) =>
+              setNewTask({ ...newTask, plannedStart: e.target.value })
+            }
+          />
+        </div>
+        <button
+          onClick={addTask}
+          className="bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+        >
+          Add Task
+        </button>
+      </div>
+
+      {/* Tasks List */}
+      <ul className="max-h-60 overflow-y-auto">
         {tasks.length === 0 && (
           <p className="text-gray-500 text-sm">No tasks yet — add one!</p>
         )}
@@ -242,7 +256,7 @@ export default function ToDoList() {
                     onClick={() => deleteTask(t.id)}
                     className="bg-red-400 px-2 py-1 rounded hover:bg-red-500"
                   >
-                    Delete
+                    ✕
                   </button>
                 </div>
               </div>
