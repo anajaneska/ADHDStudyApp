@@ -6,6 +6,8 @@ import NotePad from "../components/Notes/notepad";
 import instance from "../custom-axios/axios";
 import { jwtDecode } from "jwt-decode";
 import FeatureMenu from "../components/Menu/menu";
+import Summarizer from "../components/AI/Summarizer/summarizer";
+import FileSummarizer from "../components/AI/FileSummarizer/filesummarizer";
 
 const HomePage = () => {
   const [tasks, setTasks] = useState([]);
@@ -63,6 +65,8 @@ const HomePage = () => {
           {features.notes && (
             <NotePad userId={userId} setFeatures={setFeatures} />
           )}
+           <Summarizer/>
+           <FileSummarizer/>
         </div>
       </main>
     </div>
