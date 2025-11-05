@@ -1,5 +1,6 @@
 package mk.ukim.finki.backend.service;
 
+import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -8,10 +9,13 @@ import java.util.List;
 
 
 public interface AiService {
-    String extractText(MultipartFile file) throws IOException;
-    String summarizeTextSafely(String text,String MODEL_URL, String HUGGING_FACE_API_TOKEN) throws IOException;
     List<String> splitTextIntoChunks(String text, int maxWords);
-    String callHuggingFaceApi(String text, String MODEL_URL, String HUGGING_FACE_API_TOKEN) throws IOException ;
+    String callHuggingFaceApi(String text, String MODEL_URL) throws IOException ;
     String toJsonString(String text);
-    String parseSummary(String jsonResponse);
+    String generateFlashcards(String text) throws IOException;
+    String extractTextFromDocument(String filePath) throws IOException;
+    String summarize(String text) throws IOException;
+    //String callHuggingFaceApiWithParams(String text, String modelUrl, int maxNewTokens) throws IOException;
+
+    //String callHuggingFaceApiInternal(JSONObject json, String modelUrl) throws IOException;
 }

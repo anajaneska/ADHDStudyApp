@@ -5,70 +5,89 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class AiServiceImpl implements AiService {
-
-    // Extract text based on file type
+    @Value("${huggingface.api.key}")
+    private String HUGGING_FACE_API_TOKEN;
+    private static final String MODEL_URL_SUMMARIZE = "https://router.huggingface.co/hf-inference/models/sshleifer/distilbart-cnn-12-6";
+    private static final String MODEL_URL_FLASHCARDS = "https://router.huggingface.co/hf-inference/models/google/flan-t5-large";
     @Override
-    public String extractText(MultipartFile file) throws IOException {
-        String fileName = file.getOriginalFilename();
-        if (fileName == null) return null;
+    public String extractTextFromDocument(String filePath) throws IOException {
+        if (filePath == null) return "";
 
-        if (fileName.endsWith(".txt")) {
-            return new String(file.getBytes());
-        } else if (fileName.endsWith(".pdf")) {
-            try (PDDocument document = PDDocument.load(file.getInputStream())) {
+        String lower = filePath.toLowerCase();
+        if (lower.endsWith(".txt")) {
+            return Files.readString(Paths.get(filePath));
+        } else if (lower.endsWith(".pdf")) {
+            try (PDDocument document = PDDocument.load(new File(filePath))) {
                 PDFTextStripper stripper = new PDFTextStripper();
                 return stripper.getText(document);
             }
-        } else if (fileName.endsWith(".docx")) {
-            try (XWPFDocument doc = new XWPFDocument(file.getInputStream())) {
+        } else if (lower.endsWith(".docx")) {
+            try (FileInputStream fis = new FileInputStream(filePath);
+                 XWPFDocument doc = new XWPFDocument(fis)) {
+
                 StringBuilder sb = new StringBuilder();
                 for (XWPFParagraph p : doc.getParagraphs()) {
                     sb.append(p.getText()).append("\n");
                 }
                 return sb.toString();
             }
+        } else {
+            // fallback: try to read bytes as UTF-8 text
+            return Files.readString(Paths.get(filePath));
         }
-        return null;
     }
 
-    // Safely summarize large text
     @Override
-    public String summarizeTextSafely(String text,String MODEL_URL, String HUGGING_FACE_API_TOKEN) throws IOException {
+    public String summarize(String text) throws IOException {
+        if (text == null || text.isBlank()) return "";
+        // optional: chunk large text before sending
         List<String> chunks = splitTextIntoChunks(text, 700);
         StringBuilder combined = new StringBuilder();
 
         for (String chunk : chunks) {
-            try {
-                String partial = callHuggingFaceApi(chunk,MODEL_URL,HUGGING_FACE_API_TOKEN);
-                combined.append(partial).append(" ");
-            } catch (IOException e) {
-                // If one chunk fails, skip it
-                System.err.println("Chunk failed: " + e.getMessage());
-            }
+            String resp = callHuggingFaceApi(chunk, MODEL_URL_SUMMARIZE);
+            combined.append(resp).append(" ");
         }
 
         String combinedText = combined.toString().trim();
-        if (combinedText.length() > 1000) {
-            // Summarize summaries again
-            return callHuggingFaceApi(combinedText,MODEL_URL,HUGGING_FACE_API_TOKEN);
+        // If combined is long, request a final single-pass summarization
+        if (combinedText.length() > 1500) {
+            return callHuggingFaceApi(combinedText,MODEL_URL_SUMMARIZE);
         }
         return combinedText;
     }
 
-    // Split text into safe chunks
     @Override
+    public String generateFlashcards(String text) throws IOException {
+        if (text == null || text.isBlank()) return "";
+
+        String prompt = "Generate 5 concise flashcards from the text. " +
+                "Return them as plain text in this format:\n" +
+                "Q: <question>\nA: <answer>\n\n" +
+                "Text:\n" + text;
+
+        // If text is huge, send chunks or a trimmed portion. Here we send whole prompt.
+        return callHuggingFaceApi(prompt, MODEL_URL_FLASHCARDS);
+    }
+
+
     public List<String> splitTextIntoChunks(String text, int maxWords) {
         String[] words = text.split("\\s+");
         List<String> chunks = new ArrayList<>();
@@ -79,22 +98,16 @@ public class AiServiceImpl implements AiService {
             current.append(word).append(" ");
             count++;
             if (count >= maxWords) {
-                chunks.add(current.toString());
+                chunks.add(current.toString().trim());
                 current = new StringBuilder();
                 count = 0;
             }
         }
-
-        if (!current.isEmpty()) {
-            chunks.add(current.toString());
-        }
-
+        if (current.length() > 0) chunks.add(current.toString().trim());
         return chunks;
     }
 
-    // Call Hugging Face API
-    @Override
-    public String callHuggingFaceApi(String text, String MODEL_URL, String HUGGING_FACE_API_TOKEN) throws IOException {
+    public String callHuggingFaceApi(String text,String MODEL_URL) throws IOException {
         URL url = new URL(MODEL_URL);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
@@ -103,6 +116,7 @@ public class AiServiceImpl implements AiService {
         connection.setRequestProperty("Content-Type", "application/json");
         connection.setDoOutput(true);
 
+        // Build the JSON payload. Make sure to escape quotes.
         String jsonInput = "{\"inputs\": " + toJsonString(text) + "}";
 
         try (OutputStream os = connection.getOutputStream()) {
@@ -111,28 +125,41 @@ public class AiServiceImpl implements AiService {
 
         int responseCode = connection.getResponseCode();
         if (responseCode != 200) {
-            String errorMsg = new String(connection.getErrorStream().readAllBytes());
-            throw new IOException("HF API returned error: " + responseCode + " - " + errorMsg);
+            String err = new String(connection.getErrorStream().readAllBytes());
+            throw new IOException("HF API returned error: " + responseCode + " - " + err);
         }
 
         String response = new String(connection.getInputStream().readAllBytes());
-        return parseSummary(response);
+        // Try to parse summary_text; fallback to returning full response
+        return parseModelResponse(response);
     }
 
-    // Escape JSON safely
-    @Override
     public String toJsonString(String text) {
-        return "\"" + text.replace("\"", "\\\"").replace("\n", "\\n") + "\"";
+        return "\"" + text.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n") + "\"";
     }
 
-    // Extract summarized text from response JSON
-    @Override
-    public String parseSummary(String jsonResponse) {
-        if (jsonResponse.contains("\"summary_text\"")) {
-            int start = jsonResponse.indexOf("\"summary_text\":\"") + 17;
-            int end = jsonResponse.indexOf("\"", start);
-            return jsonResponse.substring(start, end);
+
+    public String parseModelResponse(String jsonResponse) {
+        if (jsonResponse == null) return "";
+        String lower = jsonResponse.toLowerCase();
+        if (lower.contains("\"summary_text\"")) {
+            int idx = jsonResponse.indexOf("\"summary_text\"");
+            int start = jsonResponse.indexOf(":", idx) + 1;
+            // find first quote after colon
+            int q1 = jsonResponse.indexOf("\"", start);
+            int q2 = jsonResponse.indexOf("\"", q1 + 1);
+            if (q1 >= 0 && q2 > q1) {
+                return jsonResponse.substring(q1 + 1, q2);
+            }
+        }
+        if (jsonResponse.startsWith("[") && jsonResponse.endsWith("]")) {
+            String inner = jsonResponse.substring(1, jsonResponse.length() - 1).trim();
+            if (inner.startsWith("\"") && inner.endsWith("\"")) {
+                return inner.substring(1, inner.length() - 1);
+            }
+            return inner;
         }
         return jsonResponse;
     }
 }
+
