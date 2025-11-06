@@ -1,6 +1,7 @@
 package mk.ukim.finki.backend.service.impl;
 
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import mk.ukim.finki.backend.model.Document;
 import mk.ukim.finki.backend.model.Flashcards;
@@ -14,6 +15,7 @@ import java.io.IOException;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class FlashcardServiceImpl implements FlashcardService {
 
     private final DocumentRepository documentRepository;
@@ -41,6 +43,7 @@ public class FlashcardServiceImpl implements FlashcardService {
         return flashcardRepository.findByDocumentIdAndDocumentUserId(fileId, userId)
                 .orElseThrow(() -> new RuntimeException("Flashcards not found"));
     }
+    @Transactional
     public void deleteFlashcards(Long fileId) {
         flashcardRepository.deleteByDocumentId(fileId);
     }

@@ -1,5 +1,6 @@
 package mk.ukim.finki.backend.service.impl;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import mk.ukim.finki.backend.model.Document;
 import mk.ukim.finki.backend.model.Summary;
@@ -13,6 +14,7 @@ import java.io.IOException;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class SummaryServiceImpl implements SummaryService {
 
     private final DocumentRepository documentRepository;
@@ -39,6 +41,8 @@ public class SummaryServiceImpl implements SummaryService {
         return summaryRepository.findByDocumentIdAndDocumentUserId(fileId, userId)
                 .orElseThrow(() -> new RuntimeException("Summary not found"));
     }
+    @Override
+    @Transactional
     public void deleteSummary(Long fileId) {
         summaryRepository.deleteByDocumentId(fileId);
     }

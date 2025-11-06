@@ -42,6 +42,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(request -> request
                         //Allow public pages
                         .requestMatchers("/","/api/auth/login","/api/auth/register").permitAll()
+                        .requestMatchers("/", "/api/auth/login", "/api/auth/register").permitAll()
+                        .requestMatchers(HttpMethod.DELETE, "/api/files/*/*").authenticated()
 
                         //Add Public API calls
 
