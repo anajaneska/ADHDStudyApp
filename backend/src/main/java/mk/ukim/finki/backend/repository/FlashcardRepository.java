@@ -9,4 +9,6 @@ import java.util.Optional;
 @Repository
 public interface FlashcardRepository extends JpaRepository<Flashcards, Long> {
     Optional<Flashcards> findByDocumentIdAndDocumentUserId(Long fileId, Long userId);
+
+    void deleteByDocumentId(Long documentId);
 }

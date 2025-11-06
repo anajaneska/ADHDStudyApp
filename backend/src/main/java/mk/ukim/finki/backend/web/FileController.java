@@ -22,6 +22,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/files")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:3000")
 public class FileController {
 
     private final FileService fileService;
@@ -60,4 +61,21 @@ public class FileController {
     public ResponseEntity<Flashcards> getFlashcards(@PathVariable Long fileId, @PathVariable Long userId) {
         return ResponseEntity.ok(flashcardService.getFlashcards(fileId, userId));
     }
+    @DeleteMapping("/{userId}/{fileId}")
+    public ResponseEntity<Void> deleteFile(@PathVariable Long fileId, @PathVariable Long userId) {
+        fileService.deleteFile(fileId, userId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/{fileId}/summary")
+    public ResponseEntity<Void> deleteSummary(@PathVariable Long fileId) {
+        summaryService.deleteSummary(fileId);
+        return ResponseEntity.noContent().build();
+    }
+    @DeleteMapping("/{fileId}/flashcards")
+    public ResponseEntity<Void> deleteFlashcards(@PathVariable Long fileId) {
+        flashcardService.deleteFlashcards(fileId);
+        return ResponseEntity.noContent().build();
+    }
+
 }

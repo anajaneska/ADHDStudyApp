@@ -5,8 +5,12 @@ import mk.ukim.finki.backend.model.Document;
 import mk.ukim.finki.backend.model.User;
 import mk.ukim.finki.backend.model.exeptions.UserDoesNotExistException;
 import mk.ukim.finki.backend.repository.DocumentRepository;
+import mk.ukim.finki.backend.repository.FlashcardRepository;
+import mk.ukim.finki.backend.repository.SummaryRepository;
 import mk.ukim.finki.backend.repository.UserRepository;
 import mk.ukim.finki.backend.service.FileService;
+import mk.ukim.finki.backend.service.FlashcardService;
+import mk.ukim.finki.backend.service.SummaryService;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -24,6 +28,8 @@ public class FileServiceImpl implements FileService {
 
     private final DocumentRepository documentRepository;
     private final UserRepository userRepository;
+    private final SummaryService summaryService;
+    private final FlashcardService flashcardService;
 
     private static final String UPLOAD_DIR = "uploads"; // Folder in project root
 
@@ -67,4 +73,24 @@ public class FileServiceImpl implements FileService {
     public List<Document> getUserFiles(Long userId) {
         return documentRepository.findByUserId(userId);
     }
+
+    @Override
+    public void deleteFile(Long fileId, Long userId) {
+        Document file = getUserFiles(userId).stream()
+                .filter(f -> f.getId().equals(fileId))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("File not found"));
+
+        summaryService.deleteSummary(fileId);
+        flashcardService.deleteFlashcards(fileId);
+        documentRepository.delete(file);
+
+        Path filePath = Paths.get("uploads").resolve(file.getFileUrl());
+        try {
+            Files.deleteIfExists(filePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 }

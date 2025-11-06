@@ -1,5 +1,8 @@
 package mk.ukim.finki.backend.service.impl;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import mk.ukim.finki.backend.service.AiService;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
@@ -9,23 +12,21 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class AiServiceImpl implements AiService {
     @Value("${huggingface.api.key}")
     private String HUGGING_FACE_API_TOKEN;
     private static final String MODEL_URL_SUMMARIZE = "https://router.huggingface.co/hf-inference/models/sshleifer/distilbart-cnn-12-6";
-    private static final String MODEL_URL_FLASHCARDS = "https://router.huggingface.co/hf-inference/models/google/flan-t5-large";
+    private static final String MODEL_URL_FLASHCARDS = "https://router.huggingface.co/v1/chat/completions";
+    private static final String MODEL_NAME_FLASHCARDS = "google/gemma-2-2b-it:nebius";
     @Override
     public String extractTextFromDocument(String filePath) throws IOException {
         if (filePath == null) return "";
@@ -49,7 +50,6 @@ public class AiServiceImpl implements AiService {
                 return sb.toString();
             }
         } else {
-            // fallback: try to read bytes as UTF-8 text
             return Files.readString(Paths.get(filePath));
         }
     }
@@ -57,7 +57,6 @@ public class AiServiceImpl implements AiService {
     @Override
     public String summarize(String text) throws IOException {
         if (text == null || text.isBlank()) return "";
-        // optional: chunk large text before sending
         List<String> chunks = splitTextIntoChunks(text, 700);
         StringBuilder combined = new StringBuilder();
 
@@ -67,7 +66,6 @@ public class AiServiceImpl implements AiService {
         }
 
         String combinedText = combined.toString().trim();
-        // If combined is long, request a final single-pass summarization
         if (combinedText.length() > 1500) {
             return callHuggingFaceApi(combinedText,MODEL_URL_SUMMARIZE);
         }
@@ -76,15 +74,55 @@ public class AiServiceImpl implements AiService {
 
     @Override
     public String generateFlashcards(String text) throws IOException {
-        if (text == null || text.isBlank()) return "";
+        String modelUrl = MODEL_URL_FLASHCARDS;
 
-        String prompt = "Generate 5 concise flashcards from the text. " +
-                "Return them as plain text in this format:\n" +
-                "Q: <question>\nA: <answer>\n\n" +
-                "Text:\n" + text;
+        String prompt = """
+        Generate 5 educational flashcards based on the following text. 
+        Return them as a valid JSON array of objects with 'question' and 'answer' fields. 
+        Text: %s
+        """.formatted(text);
 
-        // If text is huge, send chunks or a trimmed portion. Here we send whole prompt.
-        return callHuggingFaceApi(prompt, MODEL_URL_FLASHCARDS);
+        ObjectMapper mapper = new ObjectMapper();
+
+        Map<String, Object> message = new HashMap<>();
+        message.put("role", "user");
+        message.put("content", prompt);
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("model", MODEL_NAME_FLASHCARDS);
+        body.put("messages", List.of(message));
+        body.put("stream", false);
+
+        String payload = mapper.writeValueAsString(body);
+
+        URL url = new URL(modelUrl);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("POST");
+        connection.setRequestProperty("Authorization", "Bearer " + HUGGING_FACE_API_TOKEN);
+        connection.setRequestProperty("Content-Type", "application/json");
+        connection.setDoOutput(true);
+
+        try (OutputStream os = connection.getOutputStream()) {
+            os.write(payload.getBytes(StandardCharsets.UTF_8));
+        }
+
+        int responseCode = connection.getResponseCode();
+        String response;
+        if (responseCode == 200) {
+            response = new String(connection.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        } else {
+            String err = new String(connection.getErrorStream().readAllBytes(), StandardCharsets.UTF_8);
+            throw new IOException("Hugging Face API returned error: " + responseCode + " - " + err);
+        }
+
+        JsonNode root = mapper.readTree(response);
+        String generatedText = root.path("choices").get(0).path("message").path("content").asText();
+
+        if (!generatedText.trim().startsWith("[")) {
+            generatedText = generatedText.substring(generatedText.indexOf("[")); // crude fix
+        }
+
+        return generatedText;
     }
 
 

@@ -39,4 +39,7 @@ public class SummaryServiceImpl implements SummaryService {
         return summaryRepository.findByDocumentIdAndDocumentUserId(fileId, userId)
                 .orElseThrow(() -> new RuntimeException("Summary not found"));
     }
+    public void deleteSummary(Long fileId) {
+        summaryRepository.deleteByDocumentId(fileId);
+    }
 }

@@ -8,4 +8,5 @@ import java.util.List;
 public interface FileService {
     Document uploadFile(MultipartFile file, Long userId);
     List<Document> getUserFiles(Long userId);
+    void deleteFile(Long fileId, Long userId);
 }

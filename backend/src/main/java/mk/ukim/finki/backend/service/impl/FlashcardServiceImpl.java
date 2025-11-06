@@ -41,4 +41,7 @@ public class FlashcardServiceImpl implements FlashcardService {
         return flashcardRepository.findByDocumentIdAndDocumentUserId(fileId, userId)
                 .orElseThrow(() -> new RuntimeException("Flashcards not found"));
     }
+    public void deleteFlashcards(Long fileId) {
+        flashcardRepository.deleteByDocumentId(fileId);
+    }
 }

@@ -9,4 +9,6 @@ import java.util.Optional;
 @Repository
 public interface SummaryRepository extends JpaRepository<Summary, Long> {
     Optional<Summary> findByDocumentIdAndDocumentUserId(Long fileId, Long userId);
+
+    void deleteByDocumentId(Long documentId);
 }

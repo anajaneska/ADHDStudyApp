@@ -7,4 +7,5 @@ import java.io.IOException;
 public interface SummaryService {
     Summary generateAndSaveSummary(Long fileId, Long userId) throws IOException;
     Summary getSummary(Long fileId, Long userId);
+    void deleteSummary(Long fileId);
 }
