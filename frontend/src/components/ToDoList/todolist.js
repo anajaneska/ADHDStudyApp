@@ -1,35 +1,25 @@
+// src/components/focus/ToDoList.jsx
 import React, { useEffect, useState } from "react";
 import instance from "../../custom-axios/axios";
 import dayjs from "dayjs";
 
-export default function ToDoList({ setFeatures }) {
+export default function ToDoList({ fetchTasks, focusedTaskId }) {
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState({
     title: "",
     description: "",
     dueDate: "",
-    plannedStart: ""
+    plannedStart: "",
   });
-  const [editingTaskId, setEditingTaskId] = useState(null);
-  const [editingTaskData, setEditingTaskData] = useState({
-    title: "",
-    description: "",
-    dueDate: "",
-    plannedStart: ""
-  });
-
-  // Widget drag state
-  const [position, setPosition] = useState({ x: 100, y: 100 });
-  const [isDragging, setIsDragging] = useState(false);
 
   const userId = localStorage.getItem("userId");
   const token = localStorage.getItem("jwt");
 
-  const fetchTasks = async () => {
-    if (!userId) return console.error("User ID not found in localStorage");
+  const loadTasks = async () => {
+    if (!userId) return;
     try {
       const res = await instance.get(`/tasks/${userId}`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
       setTasks(res.data);
     } catch (err) {
@@ -38,17 +28,18 @@ export default function ToDoList({ setFeatures }) {
   };
 
   useEffect(() => {
-    fetchTasks();
+    loadTasks();
   }, [userId]);
 
   const addTask = async () => {
-    if (!userId || !newTask.title.trim()) return;
+    if (!newTask.title.trim()) return;
     try {
       await instance.post(`/tasks/${userId}`, newTask, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
       setNewTask({ title: "", description: "", dueDate: "", plannedStart: "" });
       fetchTasks();
+      loadTasks();
     } catch (error) {
       console.error("Error adding task:", error);
     }
@@ -57,7 +48,7 @@ export default function ToDoList({ setFeatures }) {
   const toggleComplete = async (id) => {
     try {
       const res = await instance.put(`/tasks/${id}/complete`, null, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
       setTasks((prev) => prev.map((t) => (t.id === id ? res.data : t)));
     } catch (err) {
@@ -68,7 +59,7 @@ export default function ToDoList({ setFeatures }) {
   const deleteTask = async (id) => {
     try {
       await instance.delete(`/tasks/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
       setTasks(tasks.filter((t) => t.id !== id));
     } catch (err) {
@@ -76,162 +67,50 @@ export default function ToDoList({ setFeatures }) {
     }
   };
 
-  const startEditing = (task) => {
-    setEditingTaskId(task.id);
-    setEditingTaskData({
-      title: task.title,
-      description: task.description || "",
-      dueDate: task.dueDate ? dayjs(task.dueDate).format("YYYY-MM-DDTHH:mm") : "",
-      plannedStart: task.plannedStart
-        ? dayjs(task.plannedStart).format("YYYY-MM-DDTHH:mm")
-        : ""
-    });
-  };
-
-  const saveEdit = async (id) => {
-    try {
-      await instance.put(`/tasks/${id}`, editingTaskData, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setEditingTaskId(null);
-      fetchTasks();
-    } catch (err) {
-      console.error("Error saving task:", err);
-    }
-  };
-
-  const handleMouseDown = (e) => {
-    setIsDragging(true);
-    const shiftX = e.clientX - position.x;
-    const shiftY = e.clientY - position.y;
-
-    const onMouseMove = (event) => {
-      setPosition({
-        x: event.clientX - shiftX,
-        y: event.clientY - shiftY
-      });
-    };
-
-    const onMouseUp = () => {
-      setIsDragging(false);
-      document.removeEventListener("mousemove", onMouseMove);
-      document.removeEventListener("mouseup", onMouseUp);
-    };
-
-    document.addEventListener("mousemove", onMouseMove);
-    document.addEventListener("mouseup", onMouseUp);
-  };
+  const filteredTasks = focusedTaskId
+    ? tasks.filter((t) => t.id === focusedTaskId)
+    : tasks;
 
   return (
-    <div
-      onMouseDown={handleMouseDown}
-      style={{
-        position: "fixed",
-        top: position.y,
-        left: position.x,
-        cursor: isDragging ? "grabbing" : "grab",
-        userSelect: "none",
-        zIndex: 1000,
-        transition: isDragging ? "none" : "transform 0.2s ease"
-      }}
-      className="p-5 bg-white rounded-2xl shadow-2xl w-96 select-none"
-    >
-      {/* Header with close X */}
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold">To-Do List</h2>
-        <button
-          onClick={() => setFeatures(prev => ({ ...prev, todo: false }))}
-          className="text-red-500 font-bold text-xl hover:text-red-700"
-        >
-          ✕
-        </button>
-      </div>
+    <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-lg">
+      <h2 className="text-2xl font-bold mb-4 text-center text-gray-800">
+        {focusedTaskId ? "Фокусирана задача" : "To-Do Листа"}
+      </h2>
 
-      {/* New Task Form */}
-      <div className="mb-4 flex flex-col gap-2">
-        <div className="flex gap-2">
-          <input
-            type="text"
-            placeholder="Task title"
-            className="border p-2 rounded flex-1"
-            value={newTask.title}
-            onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
-          />
-          <input
-            type="datetime-local"
-            className="border p-2 rounded"
-            value={newTask.plannedStart}
-            onChange={(e) =>
-              setNewTask({ ...newTask, plannedStart: e.target.value })
-            }
-          />
+      {!focusedTaskId && (
+        <div className="mb-4 flex flex-col gap-2">
+          <div className="flex gap-2">
+            <input
+              type="text"
+              placeholder="Task title"
+              className="border p-2 rounded flex-1"
+              value={newTask.title}
+              onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+            />
+            <input
+              type="datetime-local"
+              className="border p-2 rounded"
+              value={newTask.plannedStart}
+              onChange={(e) =>
+                setNewTask({ ...newTask, plannedStart: e.target.value })
+              }
+            />
+          </div>
+          <button
+            onClick={addTask}
+            className="bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+          >
+            Add Task
+          </button>
         </div>
-        <button
-          onClick={addTask}
-          className="bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
-        >
-          Add Task
-        </button>
-      </div>
+      )}
 
-      {/* Tasks List */}
       <ul className="max-h-60 overflow-y-auto">
-        {tasks.length === 0 && (
-          <p className="text-gray-500 text-sm">No tasks yet — add one!</p>
-        )}
-        {tasks.map((t) => (
-          <li key={t.id} className="border-b py-2">
-            {editingTaskId === t.id ? (
-              <div className="flex flex-col gap-2">
-                <input
-                  type="text"
-                  value={editingTaskData.title}
-                  onChange={(e) =>
-                    setEditingTaskData({ ...editingTaskData, title: e.target.value })
-                  }
-                  className="border p-1 rounded"
-                />
-                <input
-                  type="text"
-                  placeholder="Description"
-                  value={editingTaskData.description}
-                  onChange={(e) =>
-                    setEditingTaskData({ ...editingTaskData, description: e.target.value })
-                  }
-                  className="border p-1 rounded"
-                />
-                <input
-                  type="datetime-local"
-                  value={editingTaskData.plannedStart}
-                  onChange={(e) =>
-                    setEditingTaskData({ ...editingTaskData, plannedStart: e.target.value })
-                  }
-                  className="border p-1 rounded"
-                />
-                <input
-                  type="datetime-local"
-                  value={editingTaskData.dueDate}
-                  onChange={(e) =>
-                    setEditingTaskData({ ...editingTaskData, dueDate: e.target.value })
-                  }
-                  className="border p-1 rounded"
-                />
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => saveEdit(t.id)}
-                    className="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600"
-                  >
-                    Save
-                  </button>
-                  <button
-                    onClick={() => setEditingTaskId(null)}
-                    className="bg-gray-300 px-2 py-1 rounded hover:bg-gray-400"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            ) : (
+        {filteredTasks.length === 0 ? (
+          <p className="text-gray-500 text-sm">No tasks found.</p>
+        ) : (
+          filteredTasks.map((t) => (
+            <li key={t.id} className="border-b py-2">
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2">
                   <input
@@ -245,24 +124,18 @@ export default function ToDoList({ setFeatures }) {
                       `(${dayjs(t.plannedStart).format("DD/MM HH:mm")})`}
                   </span>
                 </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => startEditing(t)}
-                    className="bg-yellow-400 px-2 py-1 rounded hover:bg-yellow-500"
-                  >
-                    Edit
-                  </button>
+                {!focusedTaskId && (
                   <button
                     onClick={() => deleteTask(t.id)}
-                    className="bg-red-400 px-2 py-1 rounded hover:bg-red-500"
+                    className="bg-red-400 px-2 py-1 rounded hover:bg-red-500 text-white"
                   >
                     ✕
                   </button>
-                </div>
+                )}
               </div>
-            )}
-          </li>
-        ))}
+            </li>
+          ))
+        )}
       </ul>
     </div>
   );

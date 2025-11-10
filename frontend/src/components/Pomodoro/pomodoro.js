@@ -1,18 +1,18 @@
+// src/components/focus/PomodoroTimer.jsx
 import React, { useState, useEffect } from "react";
 import { jwtDecode } from "jwt-decode";
 
-const PomodoroTimer = ({ setFeatures }) => {
+export default function PomodoroTimer({ tasks, selectedTask, setSelectedTask }) {
   const [username, setUsername] = useState(null);
   const [timeLeft, setTimeLeft] = useState(25 * 60);
   const [isRunning, setIsRunning] = useState(false);
   const [cycle, setCycle] = useState("work");
-  const [position, setPosition] = useState({ x: 50, y: 50 });
-  const [isDragging, setIsDragging] = useState(false);
   const [workDuration, setWorkDuration] = useState(25);
   const [breakDuration, setBreakDuration] = useState(5);
   const [editMode, setEditMode] = useState(false);
   const [tempWork, setTempWork] = useState(workDuration);
   const [tempBreak, setTempBreak] = useState(breakDuration);
+  const [showTaskModal, setShowTaskModal] = useState(false);
 
   // Decode JWT
   useEffect(() => {
@@ -77,6 +77,7 @@ const PomodoroTimer = ({ setFeatures }) => {
         alert("Време е за пауза ☕");
         setCycle("break");
         setTimeLeft(breakDuration * 60);
+        setSelectedTask(null); // show all tasks again
       } else {
         alert("Време е за работа 💪");
         setCycle("work");
@@ -92,82 +93,43 @@ const PomodoroTimer = ({ setFeatures }) => {
     return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
   };
 
-  // Drag functionality
-  const handleMouseDown = (e) => {
-    setIsDragging(true);
-    const shiftX = e.clientX - position.x;
-    const shiftY = e.clientY - position.y;
-
-    const onMouseMove = (event) => {
-      setPosition({
-        x: event.clientX - shiftX,
-        y: event.clientY - shiftY,
-      });
-    };
-
-    const onMouseUp = () => {
-      setIsDragging(false);
-      document.removeEventListener("mousemove", onMouseMove);
-      document.removeEventListener("mouseup", onMouseUp);
-    };
-
-    document.addEventListener("mousemove", onMouseMove);
-    document.addEventListener("mouseup", onMouseUp);
-  };
-
-  if (!username) return <p>Се вчитува...</p>;
-
-  // Switch cycle manually
   const switchCycle = (newCycle) => {
     setCycle(newCycle);
     setTimeLeft(newCycle === "work" ? workDuration * 60 : breakDuration * 60);
     setIsRunning(false);
   };
 
-  // Save edited durations
   const saveEdit = () => {
     if (tempWork > 0) setWorkDuration(tempWork);
     if (tempBreak > 0) setBreakDuration(tempBreak);
-    switchCycle(cycle); // reset current cycle with new durations
+    switchCycle(cycle);
     setEditMode(false);
   };
 
   return (
-    <div
-      onMouseDown={handleMouseDown}
-      style={{
-        position: "fixed",
-        top: position.y,
-        left: position.x,
-        cursor: isDragging ? "grabbing" : "grab",
-        userSelect: "none",
-        transition: isDragging ? "none" : "transform 0.2s ease",
-        zIndex: 1000,
-      }}
-      className="bg-gradient-to-br from-blue-500 to-blue-700 text-white shadow-2xl rounded-2xl p-6 w-72 select-none relative"
-    >
-      {/* X button */}
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          setFeatures((prev) => ({ ...prev, pomodoro: false }));
-        }}
-        className="absolute top-2 right-2 text-red-400 font-bold text-lg hover:text-red-600"
-      >
-        ✕
-      </button>
-
+    <div className="bg-gradient-to-br from-blue-500 to-blue-700 text-white shadow-2xl rounded-2xl p-6 w-80">
       <h2 className="text-2xl font-bold mb-2 text-center">
         {cycle === "work" ? "Фокус време" : "Пауза"}
       </h2>
 
-      <p className="text-5xl font-mono text-center mb-4 drop-shadow-lg">{formatTime(timeLeft)}</p>
+      <p className="text-5xl font-mono text-center mb-4 drop-shadow-lg">
+        {formatTime(timeLeft)}
+      </p>
+
+      {selectedTask && (
+        <p className="text-center text-lg font-semibold mb-2">
+          Задача: <span className="italic">{selectedTask.title}</span>
+        </p>
+      )}
 
       <div className="flex justify-center space-x-3 mb-2">
         <button
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsRunning(!isRunning);
+          onClick={() => {
+            if (!isRunning) {
+              setShowTaskModal(true);
+            } else {
+              setIsRunning(false);
+            }
           }}
           className={`px-4 py-2 rounded-xl font-semibold ${
             isRunning
@@ -177,12 +139,13 @@ const PomodoroTimer = ({ setFeatures }) => {
         >
           {isRunning ? "Пауза" : "Старт"}
         </button>
+
         <button
-          onClick={(e) => {
-            e.stopPropagation();
+          onClick={() => {
             setIsRunning(false);
             setTimeLeft(workDuration * 60);
             setCycle("work");
+            setSelectedTask(null);
             localStorage.removeItem(storageKey);
           }}
           className="bg-gray-200 text-black px-4 py-2 rounded-xl hover:bg-gray-300"
@@ -191,13 +154,9 @@ const PomodoroTimer = ({ setFeatures }) => {
         </button>
       </div>
 
-      {/* Cycle switch */}
       <div className="flex justify-center space-x-2 mb-2">
         <button
-          onClick={(e) => {
-            e.stopPropagation();
-            switchCycle("work");
-          }}
+          onClick={() => switchCycle("work")}
           className={`px-3 py-1 rounded-lg ${
             cycle === "work" ? "bg-white text-black" : "bg-gray-300 text-black"
           }`}
@@ -205,10 +164,7 @@ const PomodoroTimer = ({ setFeatures }) => {
           Фокус
         </button>
         <button
-          onClick={(e) => {
-            e.stopPropagation();
-            switchCycle("break");
-          }}
+          onClick={() => switchCycle("break")}
           className={`px-3 py-1 rounded-lg ${
             cycle === "break" ? "bg-white text-black" : "bg-gray-300 text-black"
           }`}
@@ -217,7 +173,6 @@ const PomodoroTimer = ({ setFeatures }) => {
         </button>
       </div>
 
-      {/* Edit durations form */}
       {editMode ? (
         <div className="flex flex-col items-center space-y-2">
           <input
@@ -225,30 +180,22 @@ const PomodoroTimer = ({ setFeatures }) => {
             className="w-20 px-2 py-1 rounded text-black text-center"
             value={tempWork}
             onChange={(e) => setTempWork(parseInt(e.target.value))}
-            placeholder="Work min"
           />
           <input
             type="number"
             className="w-20 px-2 py-1 rounded text-black text-center"
             value={tempBreak}
             onChange={(e) => setTempBreak(parseInt(e.target.value))}
-            placeholder="Break min"
           />
           <div className="flex space-x-2">
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                saveEdit();
-              }}
+              onClick={saveEdit}
               className="px-3 py-1 rounded-lg bg-green-400 hover:bg-green-500"
             >
               Save
             </button>
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setEditMode(false);
-              }}
+              onClick={() => setEditMode(false)}
               className="px-3 py-1 rounded-lg bg-red-400 hover:bg-red-500"
             >
               Cancel
@@ -258,18 +205,46 @@ const PomodoroTimer = ({ setFeatures }) => {
       ) : (
         <div className="flex justify-center mt-2">
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setEditMode(true);
-            }}
+            onClick={() => setEditMode(true)}
             className="px-3 py-1 rounded-lg bg-purple-400 hover:bg-purple-500"
           >
             Измени време
           </button>
         </div>
       )}
+
+      {/* Task Selection Modal */}
+      {showTaskModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white p-6 rounded-2xl w-96">
+            <h3 className="text-xl font-bold mb-4 text-gray-800">
+              Избери задача за фокус
+            </h3>
+            <ul className="max-h-60 overflow-y-auto">
+              {tasks.map((t) => (
+                <li key={t.id}>
+                  <button
+                    onClick={() => {
+                      setSelectedTask(t);
+                      setShowTaskModal(false);
+                      setIsRunning(true);
+                    }}
+                    className="w-full text-left px-4 py-2 hover:bg-gray-200 rounded mb-1"
+                  >
+                    {t.title}
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <button
+              onClick={() => setShowTaskModal(false)}
+              className="mt-4 bg-red-400 text-white px-4 py-2 rounded hover:bg-red-500"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
-};
-
-export default PomodoroTimer;
+}

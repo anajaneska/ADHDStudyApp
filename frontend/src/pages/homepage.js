@@ -65,8 +65,6 @@ const HomePage = () => {
           {features.notes && (
             <NotePad userId={userId} setFeatures={setFeatures} />
           )}
-           <Summarizer/>
-           <FileSummarizer/>
         </div>
       </main>
     </div>

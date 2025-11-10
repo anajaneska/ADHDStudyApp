@@ -8,14 +8,14 @@ const FileDashboard = () => {
 
   const userId = localStorage.getItem("userId");
 
-  // ✅ Load user files
+  //Load user files
   useEffect(() => {
     instance.get(`/files/${userId}`)
       .then(res => setFiles(res.data))
       .catch(err => console.error("Error loading files:", err));
   }, [userId]);
 
-  // ✅ Upload file
+  //Upload file
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -38,7 +38,7 @@ const FileDashboard = () => {
     }
   };
 
-  // ✅ Generate summary
+  //Generate summary
   const handleSummarize = async (fileId) => {
     setLoading(true);
     try {
@@ -53,7 +53,7 @@ const FileDashboard = () => {
     }
   };
 
-  // ✅ Generate flashcards
+  // Generate flashcards
   const handleFlashcards = async (fileId) => {
     setLoading(true);
     try {
@@ -68,7 +68,7 @@ const FileDashboard = () => {
     }
   };
 
-  // ✅ View saved summary
+  //View saved summary
   const viewSummary = async (fileId) => {
     setLoading(true);
     try {
@@ -82,7 +82,7 @@ const FileDashboard = () => {
     }
   };
 
-  // ✅ View saved flashcards
+  //View saved flashcards
   const viewFlashcards = async (fileId) => {
     setLoading(true);
     try {
@@ -96,7 +96,7 @@ const FileDashboard = () => {
     }
   };
 
-  // ✅ Delete summary
+  //Delete summary
   const deleteSummary = async (fileId) => {
     if (!window.confirm("Are you sure you want to delete this summary?")) return;
 
@@ -110,7 +110,7 @@ const FileDashboard = () => {
     }
   };
 
-  // ✅ Delete flashcards
+  //Delete flashcards
   const deleteFlashcards = async (fileId) => {
     if (!window.confirm("Are you sure you want to delete these flashcards?")) return;
 
@@ -139,7 +139,7 @@ const FileDashboard = () => {
       <ul className="border rounded p-4 bg-gray-50">
         {files.length === 0 && <p>No files uploaded yet.</p>}
         {files.map(file => {
-          // ✅ Parse flashcards JSON safely
+          //Parse flashcards JSON safely
           let flashcardsArray = [];
           if (file.flashcards?.flashcardData) {
             try {
