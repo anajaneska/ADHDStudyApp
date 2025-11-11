@@ -1,14 +1,14 @@
 /* --- Layout --- */
-.login-container {
+.register-container {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background-color: #e9eff6; /* soft, calm blue-gray background */
+  background-color: #e9eff6; /* soft calm blue-gray */
   font-family: "Inter", "Segoe UI", sans-serif;
 }
 
-.login-card {
+.register-card {
   background-color: #ffffff;
   padding: 2.5rem 3rem;
   border-radius: 18px;
@@ -19,33 +19,33 @@
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.login-card:hover {
+.register-card:hover {
   transform: translateY(-3px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
-/* --- Title & Text --- */
-.login-title {
+/* --- Titles & Text --- */
+.register-title {
   font-size: 1.8rem;
   font-weight: 700;
   color: #2a3f5f;
   margin-bottom: 0.5rem;
 }
 
-.login-subtitle {
+.register-subtitle {
   font-size: 1rem;
   color: #5c6b7a;
   margin-bottom: 1.8rem;
 }
 
-/* --- Form Elements --- */
-.login-form {
+/* --- Form --- */
+.register-form {
   display: flex;
   flex-direction: column;
   gap: 1.2rem;
 }
 
-.login-input {
+.register-input {
   padding: 0.8rem 1rem;
   border-radius: 10px;
   border: 1px solid #cbd5e1;
@@ -54,13 +54,13 @@
   transition: border-color 0.3s, box-shadow 0.3s;
 }
 
-.login-input:focus {
+.register-input:focus {
   border-color: #7aa2e3;
   box-shadow: 0 0 6px rgba(122, 162, 227, 0.3);
 }
 
 /* --- Button --- */
-.login-button {
+.register-button {
   padding: 0.9rem;
   background-color: #4169e1; /* royal blue */
   color: white;
@@ -72,34 +72,53 @@
   transition: background-color 0.3s, transform 0.2s;
 }
 
-.login-button:hover {
+.register-button:hover {
   background-color: #365acb;
   transform: translateY(-2px);
 }
 
-.login-button:active {
+.register-button:active {
   transform: scale(0.98);
 }
 
-/* --- ADHD-Friendly Focus & Accessibility --- */
-.login-input:focus,
-.login-button:focus {
-  outline: 3px solid #ffda77; /* warm yellow focus ring */
+/* --- ADHD-friendly focus & clarity --- */
+.register-input:focus,
+.register-button:focus {
+  outline: 3px solid #ffda77; /* warm yellow highlight */
   outline-offset: 3px;
+}
+
+/* --- Link --- */
+.register-login-link {
+  margin-top: 1.5rem;
+  font-size: 0.95rem;
+  color: #5c6b7a;
+}
+
+.register-login-link .link {
+  color: #4169e1;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.register-login-link .link:hover {
+  color: #365acb;
+  text-decoration: underline;
 }
 
 /* --- Responsive Design --- */
 @media (max-width: 480px) {
-  .login-card {
+  .register-card {
     padding: 2rem;
     max-width: 90%;
   }
 
-  .login-title {
+  .register-title {
     font-size: 1.6rem;
   }
 
-  .login-subtitle {
+  .register-subtitle {
     font-size: 0.9rem;
   }
 }

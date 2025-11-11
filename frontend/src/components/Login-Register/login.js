@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import instance from '../../custom-axios/axios';
-import {useNavigate} from "react-router-dom";
-import './login.css'
+import { useNavigate } from "react-router-dom";
+import './login.css';
 
 export default function Login() {
   const [form, setForm] = useState({ username: '', password: '' });
@@ -17,7 +17,6 @@ export default function Login() {
         throw new Error("Invalid login response: missing token or userId");
       }
 
-      // Store data in localStorage
       localStorage.setItem('jwt', token);
       localStorage.setItem('userId', userId);
       localStorage.setItem('username', username);
@@ -25,7 +24,7 @@ export default function Login() {
       console.log("Logged in successfully:", { username, userId });
 
       setForm({ username: '', password: '' });
-      navigate(`/`);
+      navigate(`/focus`);
     } catch (err) {
       console.error("Login error:", err);
       alert("Login failed. Please check your credentials.");
@@ -33,25 +32,35 @@ export default function Login() {
   };
 
   return (
-    <div className="container px-6">
-      <h2 className="my-3">Login</h2>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          placeholder="Username"
-          value={form.username}
-          onChange={(e) => setForm({ ...form, username: e.target.value })}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={form.password}
-          onChange={(e) => setForm({ ...form, password: e.target.value })}
-          required
-        />
-        <button type="submit">Login</button>
-      </form>
+    <div className="login-container">
+      <div className="login-card">
+        <h2 className="login-title">Welcome Back 👋</h2>
+        <p className="login-subtitle">Focus starts with signing in</p>
+
+        <form onSubmit={handleSubmit} className="login-form">
+          <input
+            type="text"
+            placeholder="Username"
+            value={form.username}
+            onChange={(e) => setForm({ ...form, username: e.target.value })}
+            required
+            className="login-input"
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={form.password}
+            onChange={(e) => setForm({ ...form, password: e.target.value })}
+            required
+            className="login-input"
+          />
+          <button type="submit" className="login-button">Login</button>
+        </form>
+        <p className="register-login-link">
+          Don't have an account?{" "}<br/>
+          <span onClick={() => navigate('/register')} className="link">Create an account</span>
+        </p>
+      </div>
     </div>
   );
 }

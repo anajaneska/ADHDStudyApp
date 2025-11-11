@@ -7,6 +7,7 @@ import HomePage from './pages/homepage.js';
 import FileDashboard from './pages/filedashboard.js';
 import FocusPage from './pages/focuspage.js';
 import Header from './components/Header/header.js';
+import OrganizationPage from './pages/organizationpage.js';
 
 
 class App extends Component {
@@ -32,6 +33,7 @@ class App extends Component {
           <Route path="/login" element={<Login onLogin={this.onLogin} />} />
           <Route path="/filedashboard" element={<FileDashboard />} />
           <Route path="/focus" element={<FocusPage/>} />
+          <Route path="/organize" element={<OrganizationPage/>} />
         </Routes>
       </Router>
     );

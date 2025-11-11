@@ -1,4 +1,3 @@
-// src/components/focus/PomodoroTimer.jsx
 import React, { useState, useEffect } from "react";
 import { jwtDecode } from "jwt-decode";
 
