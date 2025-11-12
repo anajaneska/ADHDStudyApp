@@ -18,12 +18,12 @@ public class Document {
     private Long id;
 
     private String fileName;
-    private String fileUrl; // Firebase/Cloud URL or local path
+    private String fileUrl;
     private LocalDateTime uploadedAt = LocalDateTime.now();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    @JsonBackReference(value = "user-document") // ✅ match the name exactly
+    @JsonBackReference(value = "user-document")
     private User user;
 
     @OneToOne(mappedBy = "document", cascade = CascadeType.ALL)
@@ -33,4 +33,8 @@ public class Document {
     @OneToOne(mappedBy = "document", cascade = CascadeType.ALL)
     @JsonManagedReference(value = "document-flashcards")
     private Flashcards flashcards;
+
+    @OneToOne(mappedBy = "document", cascade = CascadeType.ALL)
+    @JsonManagedReference(value = "document-quiz")
+    private Quiz quiz;
 }

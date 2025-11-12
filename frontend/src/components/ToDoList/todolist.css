@@ -1,0 +1,153 @@
+.todo-container {
+  background: linear-gradient(135deg, #e0f2ff, #f8fbff);
+  border-radius: 24px;
+  padding: 24px;
+  max-width: 500px;
+  margin: 0 auto;
+  box-shadow: 0 8px 20px rgba(100, 150, 250, 0.2);
+}
+
+.todo-title {
+  color: #1e3a8a;
+  text-align: center;
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+}
+
+.task-input {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.05);
+}
+
+.task-input input,
+.task-input textarea {
+  border: 1px solid #bfd3f8;
+  border-radius: 8px;
+  padding: 8px;
+  font-size: 1rem;
+  outline: none;
+}
+
+.task-input input:focus,
+.task-input textarea:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 4px #3b82f6;
+}
+
+.task-input button {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 10px;
+  font-weight: 600;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.task-input button:hover {
+  background: #1e40af;
+}
+
+.todo-list {
+  list-style: none;
+  padding: 0;
+  margin-top: 1rem;
+  max-height: 350px;
+  overflow-y: auto;
+}
+
+.task-item {
+  background: #ffffff;
+  margin-bottom: 10px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid #cfe2ff;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: 0.2s;
+}
+
+.task-item.completed {
+  background: #d1fae5;
+  text-decoration: line-through;
+  opacity: 0.8;
+}
+
+.task-display {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.task-texts h3 {
+  font-size: 1.1rem;
+  color: #1e3a8a;
+}
+
+.task-texts p {
+  color: #475569;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.task-actions button {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.task-actions button:hover {
+  transform: scale(1.1);
+}
+
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.edit-form input,
+.edit-form textarea {
+  border: 1px solid #bfd3f8;
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.edit-actions .save {
+  background: #22c55e;
+  color: white;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.edit-actions .cancel {
+  background: #f3f4f6;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.no-tasks {
+  text-align: center;
+  color: #6b7280;
+  font-style: italic;
+}

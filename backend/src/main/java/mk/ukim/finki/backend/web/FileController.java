@@ -1,15 +1,9 @@
 package mk.ukim.finki.backend.web;
 
 import lombok.RequiredArgsConstructor;
-import mk.ukim.finki.backend.model.Document;
-import mk.ukim.finki.backend.model.Flashcards;
-import mk.ukim.finki.backend.model.Summary;
+import mk.ukim.finki.backend.model.*;
 
-import mk.ukim.finki.backend.model.UserPrincipal;
-import mk.ukim.finki.backend.service.FileService;
-import mk.ukim.finki.backend.service.FlashcardService;
-import mk.ukim.finki.backend.service.SummaryService;
-import mk.ukim.finki.backend.service.UserService;
+import mk.ukim.finki.backend.service.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +22,7 @@ public class FileController {
     private final FileService fileService;
     private final SummaryService summaryService;
     private final FlashcardService flashcardService;
+    private final QuizService quizService;
 
     @PostMapping("/{userId}/upload")
     public ResponseEntity<Document> uploadFile(@RequestParam("file") MultipartFile file, @PathVariable Long userId) {
@@ -75,6 +70,23 @@ public class FileController {
     @DeleteMapping("/{fileId}/flashcards")
     public ResponseEntity<Void> deleteFlashcards(@PathVariable Long fileId) {
         flashcardService.deleteFlashcards(fileId);
+        return ResponseEntity.noContent().build();
+    }
+    @PostMapping("/{userId}/{fileId}/quiz")
+    public ResponseEntity<Quiz> generateQuiz(@PathVariable Long fileId, @PathVariable Long userId) throws IOException {
+        Quiz quiz = quizService.generateAndSaveQuiz(fileId, userId);
+        return ResponseEntity.ok(quiz);
+    }
+
+    @GetMapping("/{userId}/{fileId}/quiz")
+    public ResponseEntity<Quiz> getQuiz(@PathVariable Long fileId, @PathVariable Long userId) {
+        Quiz quiz = quizService.getQuiz(fileId, userId);
+        return ResponseEntity.ok(quiz);
+    }
+
+    @DeleteMapping("/{fileId}/quiz")
+    public ResponseEntity<Void> deleteQuiz(@PathVariable Long fileId) {
+        quizService.deleteQuiz(fileId);
         return ResponseEntity.noContent().build();
     }
 

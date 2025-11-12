@@ -1,7 +1,8 @@
-// src/components/focus/ToDoList.jsx
 import React, { useEffect, useState } from "react";
 import instance from "../../custom-axios/axios";
-import dayjs from "dayjs";
+import TaskItem from "./taskitem";
+import TaskInput from "./taskinput";
+import "./todolist.css";
 
 export default function ToDoList({ fetchTasks, focusedTaskId }) {
   const [tasks, setTasks] = useState([]);
@@ -38,7 +39,7 @@ export default function ToDoList({ fetchTasks, focusedTaskId }) {
         headers: { Authorization: `Bearer ${token}` },
       });
       setNewTask({ title: "", description: "", dueDate: "", plannedStart: "" });
-      fetchTasks();
+      fetchTasks?.();
       loadTasks();
     } catch (error) {
       console.error("Error adding task:", error);
@@ -67,73 +68,44 @@ export default function ToDoList({ fetchTasks, focusedTaskId }) {
     }
   };
 
+  const editTask = async (id, updatedData) => {
+    try {
+      const res = await instance.put(`/tasks/${id}`, updatedData, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setTasks((prev) => prev.map((t) => (t.id === id ? res.data : t)));
+    } catch (err) {
+      console.error("Error editing task:", err);
+    }
+  };
+
   const filteredTasks = focusedTaskId
     ? tasks.filter((t) => t.id === focusedTaskId)
     : tasks;
 
   return (
-    <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-lg">
-      <h2 className="text-2xl font-bold mb-4 text-center text-gray-800">
+    <div className="todo-container">
+      <h2 className="todo-title">
         {focusedTaskId ? "Фокусирана задача" : "To-Do Листа"}
       </h2>
 
       {!focusedTaskId && (
-        <div className="mb-4 flex flex-col gap-2">
-          <div className="flex gap-2">
-            <input
-              type="text"
-              placeholder="Task title"
-              className="border p-2 rounded flex-1"
-              value={newTask.title}
-              onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
-            />
-            <input
-              type="datetime-local"
-              className="border p-2 rounded"
-              value={newTask.plannedStart}
-              onChange={(e) =>
-                setNewTask({ ...newTask, plannedStart: e.target.value })
-              }
-            />
-          </div>
-          <button
-            onClick={addTask}
-            className="bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
-          >
-            Add Task
-          </button>
-        </div>
+        <TaskInput newTask={newTask} setNewTask={setNewTask} addTask={addTask} />
       )}
 
-      <ul className="max-h-60 overflow-y-auto">
+      <ul className="todo-list">
         {filteredTasks.length === 0 ? (
-          <p className="text-gray-500 text-sm">No tasks found.</p>
+          <p className="no-tasks">Нема задачи.</p>
         ) : (
           filteredTasks.map((t) => (
-            <li key={t.id} className="border-b py-2">
-              <div className="flex justify-between items-center">
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={t.completed}
-                    onChange={() => toggleComplete(t.id)}
-                  />
-                  <span className={t.completed ? "line-through" : ""}>
-                    {t.title}{" "}
-                    {t.plannedStart &&
-                      `(${dayjs(t.plannedStart).format("DD/MM HH:mm")})`}
-                  </span>
-                </div>
-                {!focusedTaskId && (
-                  <button
-                    onClick={() => deleteTask(t.id)}
-                    className="bg-red-400 px-2 py-1 rounded hover:bg-red-500 text-white"
-                  >
-                    ✕
-                  </button>
-                )}
-              </div>
-            </li>
+            <TaskItem
+              key={t.id}
+              task={t}
+              focusedTaskId={focusedTaskId}
+              toggleComplete={toggleComplete}
+              deleteTask={deleteTask}
+              editTask={editTask}
+            />
           ))
         )}
       </ul>
