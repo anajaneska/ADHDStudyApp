@@ -15,7 +15,9 @@ public interface AiService {
     String generateFlashcards(String text) throws IOException;
     String extractTextFromDocument(String filePath) throws IOException;
     String summarize(String text) throws IOException;
+
     String generateQuiz(String text) throws IOException;
+    //String generateQuiz(String text) throws IOException;
     //String callHuggingFaceApiWithParams(String text, String modelUrl, int maxNewTokens) throws IOException;
 
     //String callHuggingFaceApiInternal(JSONObject json, String modelUrl) throws IOException;

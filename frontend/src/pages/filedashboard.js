@@ -8,14 +8,14 @@ const FileDashboard = () => {
 
   const userId = localStorage.getItem("userId");
 
-  //Load user files
+  // Load user files
   useEffect(() => {
     instance.get(`/files/${userId}`)
       .then(res => setFiles(res.data))
       .catch(err => console.error("Error loading files:", err));
   }, [userId]);
 
-  //Upload file
+  // Upload file
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -38,7 +38,7 @@ const FileDashboard = () => {
     }
   };
 
-  //Generate summary
+  // Generate summary
   const handleSummarize = async (fileId) => {
     setLoading(true);
     try {
@@ -68,7 +68,22 @@ const FileDashboard = () => {
     }
   };
 
-  //View saved summary
+  // Generate quiz
+  const handleQuiz = async (fileId) => {
+    setLoading(true);
+    try {
+      const res = await instance.post(`/files/${userId}/${fileId}/quiz`);
+      setFiles(prev => prev.map(f => f.id === fileId ? { ...f, quiz: res.data } : f));
+      alert("Quiz generated successfully!");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to generate quiz.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // View summary
   const viewSummary = async (fileId) => {
     setLoading(true);
     try {
@@ -82,7 +97,7 @@ const FileDashboard = () => {
     }
   };
 
-  //View saved flashcards
+  // View flashcards
   const viewFlashcards = async (fileId) => {
     setLoading(true);
     try {
@@ -96,10 +111,23 @@ const FileDashboard = () => {
     }
   };
 
-  //Delete summary
+  // View quiz
+  const viewQuiz = async (fileId) => {
+    setLoading(true);
+    try {
+      const res = await instance.get(`/files/${userId}/${fileId}/quiz`);
+      setFiles(prev => prev.map(f => f.id === fileId ? { ...f, quiz: res.data } : f));
+    } catch (err) {
+      console.error(err);
+      alert("No quiz found for this file.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Delete summary
   const deleteSummary = async (fileId) => {
     if (!window.confirm("Are you sure you want to delete this summary?")) return;
-
     try {
       await instance.delete(`/files/${fileId}/summary`);
       setFiles(prev => prev.map(f => f.id === fileId ? { ...f, summary: null } : f));
@@ -110,10 +138,9 @@ const FileDashboard = () => {
     }
   };
 
-  //Delete flashcards
+  // Delete flashcards
   const deleteFlashcards = async (fileId) => {
     if (!window.confirm("Are you sure you want to delete these flashcards?")) return;
-
     try {
       await instance.delete(`/files/${fileId}/flashcards`);
       setFiles(prev => prev.map(f => f.id === fileId ? { ...f, flashcards: null } : f));
@@ -139,7 +166,7 @@ const FileDashboard = () => {
       <ul className="border rounded p-4 bg-gray-50">
         {files.length === 0 && <p>No files uploaded yet.</p>}
         {files.map(file => {
-          //Parse flashcards JSON safely
+          // Parse flashcards JSON safely
           let flashcardsArray = [];
           if (file.flashcards?.flashcardData) {
             try {
@@ -147,6 +174,17 @@ const FileDashboard = () => {
               flashcardsArray = JSON.parse(cleanData);
             } catch (err) {
               console.error("Failed to parse flashcards JSON:", err);
+            }
+          }
+
+          // Parse quiz JSON safely
+          let quizArray = [];
+          if (file.quiz?.quizData) {
+            try {
+              const cleanQuiz = file.quiz.quizData.replace(/```/g, "").trim();
+              quizArray = JSON.parse(cleanQuiz);
+            } catch (err) {
+              console.error("Failed to parse quiz JSON:", err);
             }
           }
 
@@ -168,6 +206,12 @@ const FileDashboard = () => {
                     Flashcards
                   </button>
                   <button
+                    onClick={() => handleQuiz(file.id)}
+                    className="bg-purple-500 text-white px-3 py-1 rounded hover:bg-purple-600"
+                  >
+                    Quiz
+                  </button>
+                  <button
                     onClick={() => viewSummary(file.id)}
                     className="bg-gray-400 text-white px-3 py-1 rounded hover:bg-gray-500"
                   >
@@ -178,6 +222,12 @@ const FileDashboard = () => {
                     className="bg-gray-600 text-white px-3 py-1 rounded hover:bg-gray-700"
                   >
                     View Flashcards
+                  </button>
+                  <button
+                    onClick={() => viewQuiz(file.id)}
+                    className="bg-gray-800 text-white px-3 py-1 rounded hover:bg-gray-900"
+                  >
+                    View Quiz
                   </button>
                 </div>
               </div>
@@ -219,6 +269,26 @@ const FileDashboard = () => {
                       </li>
                     ))}
                   </ul>
+                </div>
+              )}
+
+              {/* Quiz Display */}
+              {quizArray.length > 0 && (
+                <div className="mt-2 border p-4 rounded bg-gray-100">
+                  <h3 className="text-lg font-semibold mb-2">📝 Quiz</h3>
+                  {quizArray.map((q, idx) => (
+                    <div key={idx} className="mb-2 p-2 border rounded bg-white shadow-sm">
+                      <p className="font-medium">{idx + 1}. {q.question}</p>
+                      <ul className="mt-1 space-y-1">
+                        {q.options.map((opt, i) => (
+                          <li key={i}>
+                            <input type="radio" name={`q${idx}`} id={`q${idx}_opt${i}`} className="mr-2"/>
+                            <label htmlFor={`q${idx}_opt${i}`}>{opt}</label>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
                 </div>
               )}
             </li>

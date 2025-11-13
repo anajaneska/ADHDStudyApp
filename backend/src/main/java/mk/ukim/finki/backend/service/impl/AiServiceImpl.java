@@ -20,12 +20,21 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 
+
+
 @Service
 public class AiServiceImpl implements AiService {
+
     @Value("${huggingface.api.key}")
     private String HUGGING_FACE_API_TOKEN;
-    private static final String MODEL_URL_SUMMARIZE = "https://router.huggingface.co/hf-inference/models/sshleifer/distilbart-cnn-12-6";
-    private static final String MODEL_URL_FLASHCARDS = "https://router.huggingface.co/v1/chat/completions";
+
+    private static final String MODEL_URL_SUMMARIZE =
+            "https://router.huggingface.co/hf-inference/models/sshleifer/distilbart-cnn-12-6";
+    private static final String MODEL_URL_CHAT =
+            "https://router.huggingface.co/v1/chat/completions";
+    private static final String MODEL_NAME_CHAT =
+            "google/gemma-2-2b-it:nebius";
+
     @Override
     public String extractTextFromDocument(String filePath) throws IOException {
         if (filePath == null) return "";
@@ -66,21 +75,31 @@ public class AiServiceImpl implements AiService {
 
         String combinedText = combined.toString().trim();
         if (combinedText.length() > 1500) {
-            return callHuggingFaceApi(combinedText,MODEL_URL_SUMMARIZE);
+            return callHuggingFaceApi(combinedText, MODEL_URL_SUMMARIZE);
         }
         return combinedText;
     }
 
+    // ✅ FIXED FLASHCARDS
     @Override
     public String generateFlashcards(String text) throws IOException {
-        String modelUrl = MODEL_URL_FLASHCARDS;
+        return callChatModel(
+                "Generate 5 educational flashcards based on the following text. " +
+                        "Return them as a valid JSON array of objects with 'question' and 'answer' fields.\nText: " + text
+        );
+    }
 
-        String prompt = """
-        Generate 5 educational flashcards based on the following text. 
-        Return them as a valid JSON array of objects with 'question' and 'answer' fields. 
-        Text: %s
-        """.formatted(text);
+    // ✅ NEW QUIZ GENERATION
+    @Override
+    public String generateQuiz(String text) throws IOException {
+        return callChatModel(
+                "Create a quiz with 5 multiple-choice questions (A-D) based on the following text. " +
+                        "Return them as a valid JSON array of objects with 'question', 'options', and 'correctAnswer' fields.\nText: " + text
+        );
+    }
 
+    // Shared chat model logic
+    private String callChatModel(String prompt) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
 
         Map<String, Object> message = new HashMap<>();
@@ -88,13 +107,13 @@ public class AiServiceImpl implements AiService {
         message.put("content", prompt);
 
         Map<String, Object> body = new HashMap<>();
-        body.put("model", MODEL_URL_FLASHCARDS);
+        body.put("model", MODEL_NAME_CHAT);
         body.put("messages", List.of(message));
         body.put("stream", false);
 
         String payload = mapper.writeValueAsString(body);
 
-        URL url = new URL(modelUrl);
+        URL url = new URL(MODEL_URL_CHAT);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Authorization", "Bearer " + HUGGING_FACE_API_TOKEN);
@@ -115,16 +134,19 @@ public class AiServiceImpl implements AiService {
         }
 
         JsonNode root = mapper.readTree(response);
-        String generatedText = root.path("choices").get(0).path("message").path("content").asText();
+        String content = root.path("choices").get(0).path("message").path("content").asText();
 
-        if (!generatedText.trim().startsWith("[")) {
-            generatedText = generatedText.substring(generatedText.indexOf("[")); // crude fix
+        // small cleanup for malformed AI output
+        if (content.contains("[")) {
+            content = content.substring(content.indexOf("["));
         }
-
-        return generatedText;
+        if (content.contains("```")) {
+            content = content.replace("```json", "").replace("```", "").trim();
+        }
+        return content;
     }
 
-
+    // Helper methods for summarization
     public List<String> splitTextIntoChunks(String text, int maxWords) {
         String[] words = text.split("\\s+");
         List<String> chunks = new ArrayList<>();
@@ -144,7 +166,7 @@ public class AiServiceImpl implements AiService {
         return chunks;
     }
 
-    public String callHuggingFaceApi(String text,String MODEL_URL) throws IOException {
+    public String callHuggingFaceApi(String text, String MODEL_URL) throws IOException {
         URL url = new URL(MODEL_URL);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
@@ -153,7 +175,6 @@ public class AiServiceImpl implements AiService {
         connection.setRequestProperty("Content-Type", "application/json");
         connection.setDoOutput(true);
 
-        // Build the JSON payload. Make sure to escape quotes.
         String jsonInput = "{\"inputs\": " + toJsonString(text) + "}";
 
         try (OutputStream os = connection.getOutputStream()) {
@@ -167,95 +188,27 @@ public class AiServiceImpl implements AiService {
         }
 
         String response = new String(connection.getInputStream().readAllBytes());
-        // Try to parse summary_text; fallback to returning full response
         return parseModelResponse(response);
     }
 
     public String toJsonString(String text) {
-        return "\"" + text.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n") + "\"";
+        return "\"" + text.replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\n", "\\n") + "\"";
     }
-
 
     public String parseModelResponse(String jsonResponse) {
         if (jsonResponse == null) return "";
-        String lower = jsonResponse.toLowerCase();
-        if (lower.contains("\"summary_text\"")) {
+        if (jsonResponse.contains("\"summary_text\"")) {
             int idx = jsonResponse.indexOf("\"summary_text\"");
             int start = jsonResponse.indexOf(":", idx) + 1;
-            // find first quote after colon
             int q1 = jsonResponse.indexOf("\"", start);
             int q2 = jsonResponse.indexOf("\"", q1 + 1);
             if (q1 >= 0 && q2 > q1) {
                 return jsonResponse.substring(q1 + 1, q2);
             }
         }
-        if (jsonResponse.startsWith("[") && jsonResponse.endsWith("]")) {
-            String inner = jsonResponse.substring(1, jsonResponse.length() - 1).trim();
-            if (inner.startsWith("\"") && inner.endsWith("\"")) {
-                return inner.substring(1, inner.length() - 1);
-            }
-            return inner;
-        }
         return jsonResponse;
     }
-    @Override
-    public String generateQuiz(String text) throws IOException {
-        // Model endpoint for Hugging Face chat completion
-        String modelUrl = MODEL_URL_FLASHCARDS;
-
-        // Use a Hugging Face model capable of structured text generation
-        String modelName = "meta-llama/Llama-3.1-8B-Instruct"; // or another chat-capable model you prefer
-
-        String prompt = """
-        Create a quiz with 5 multiple-choice questions (A-D) based on the following text. 
-        Return them as a valid JSON array of objects with 'question', 'options', and 'correctAnswer' fields.
-        Text: %s
-        """.formatted(text);
-
-        ObjectMapper mapper = new ObjectMapper();
-
-        Map<String, Object> message = new HashMap<>();
-        message.put("role", "user");
-        message.put("content", prompt);
-
-        Map<String, Object> body = new HashMap<>();
-        body.put("model", modelName); // ✅ Use modelName instead of missing constant
-        body.put("messages", List.of(message));
-        body.put("stream", false);
-
-        String payload = mapper.writeValueAsString(body);
-
-        URL url = new URL(modelUrl);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("POST");
-        connection.setRequestProperty("Authorization", "Bearer " + HUGGING_FACE_API_TOKEN);
-        connection.setRequestProperty("Content-Type", "application/json");
-        connection.setDoOutput(true);
-
-        try (OutputStream os = connection.getOutputStream()) {
-            os.write(payload.getBytes(StandardCharsets.UTF_8));
-        }
-
-        int responseCode = connection.getResponseCode();
-        String response;
-        if (responseCode == 200) {
-            response = new String(connection.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-        } else {
-            String err = new String(connection.getErrorStream().readAllBytes(), StandardCharsets.UTF_8);
-            throw new IOException("Hugging Face API returned error: " + responseCode + " - " + err);
-        }
-
-        JsonNode root = mapper.readTree(response);
-        String generatedText = root.path("choices").get(0).path("message").path("content").asText();
-
-        if (!generatedText.trim().startsWith("[")) {
-            generatedText = generatedText.substring(generatedText.indexOf("[")); // crude fix if model returns extra text
-        }
-
-        return generatedText;
-    }
-
-
-
 }
 
