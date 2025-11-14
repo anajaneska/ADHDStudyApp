@@ -1,6 +1,7 @@
 package mk.ukim.finki.backend.service;
 
 
+import mk.ukim.finki.backend.model.Subtask;
 import mk.ukim.finki.backend.model.Task;
 import mk.ukim.finki.backend.model.exeptions.TaskDoesNotExistException;
 import mk.ukim.finki.backend.repository.TaskRepository;
@@ -20,5 +21,9 @@ public interface TaskService {
     void deleteTask(Long id);
     Task updateTask(Long id, Task updatedTask) throws TaskDoesNotExistException;
     Task toggleTaskCompletion(Long id);
+    Subtask estimateSubtaskTime(Long subtaskId);
+    Task breakdownTask(Long taskId);
+    Subtask breakDownSubtask(Long subtaskId);
+    Task estimateTaskTime(Long taskId);
 
 }

@@ -9,9 +9,9 @@ import java.util.List;
 
 
 public interface AiService {
-    List<String> splitTextIntoChunks(String text, int maxWords);
-    String callHuggingFaceApi(String text, String MODEL_URL) throws IOException ;
-    String toJsonString(String text);
+    //List<String> splitTextIntoChunks(String text, int maxWords);
+    //String callHuggingFaceApi(String text, String MODEL_URL) throws IOException ;
+    //String toJsonString(String text);
     String generateFlashcards(String text) throws IOException;
     String extractTextFromDocument(String filePath) throws IOException;
     String summarize(String text) throws IOException;

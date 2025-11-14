@@ -2,6 +2,7 @@ package mk.ukim.finki.backend.web;
 
 
 import lombok.RequiredArgsConstructor;
+import mk.ukim.finki.backend.model.Subtask;
 import mk.ukim.finki.backend.model.Task;
 import mk.ukim.finki.backend.model.User;
 import mk.ukim.finki.backend.service.TaskService;
@@ -44,5 +45,24 @@ public class TaskController {
     @PutMapping("/{id}/complete")
     public Task completeTask(@PathVariable Long id) {
         return taskService.toggleTaskCompletion(id);
+    }
+
+    @PostMapping("/{id}/estimate")
+    public Task estimateTime(@PathVariable Long id) {
+        return taskService.estimateTaskTime(id);
+    }
+
+    @PostMapping("/{id}/breakdown")
+    public Task breakDownTask(@PathVariable Long id) {
+        return taskService.breakdownTask(id);
+    }
+
+    @PostMapping("/subtasks/{id}/breakdown")
+    public Subtask breakDownSubtask(@PathVariable Long id) {
+        return taskService.breakDownSubtask(id);
+    }
+    @PostMapping("/subtasks/{id}/estimate")
+    public Subtask estimateSubtask(@PathVariable Long id) {
+        return taskService.estimateSubtaskTime(id);
     }
 }

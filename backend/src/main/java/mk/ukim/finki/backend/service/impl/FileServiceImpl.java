@@ -82,7 +82,7 @@ public class FileServiceImpl implements FileService {
                 .orElseThrow(() -> new RuntimeException("File not found"));
 
         summaryService.deleteSummary(fileId);
-        flashcardService.deleteFlashcards(fileId);
+        flashcardService.deleteFlashcards (fileId);
         documentRepository.delete(file);
 
         Path filePath = Paths.get("uploads").resolve(file.getFileUrl());
