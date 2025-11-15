@@ -54,7 +54,7 @@ public class ChatModelServiceHF {
         return callChat(prompt);
     }
 
-    private String callChat(String prompt) throws IOException {
+    public String callChat(String prompt) throws IOException {
 
         Map<String, Object> body = Map.of(
                 "model", MODEL_NAME,
@@ -99,6 +99,9 @@ public class ChatModelServiceHF {
         }
 
         return result;
+    }
+    public String generateEstimation(String prompt) throws IOException {
+        return callChat(prompt); // whatever your wrapper is
     }
 
 }

@@ -17,32 +17,32 @@ public class AiBreakdownServiceHF {
     private final ChatModelServiceHF chatModelServiceHF;
 
     /**
-     * Generate subtasks for a task or subtask using Hugging Face model.
+     * Generates a list of subtasks for a given task.
      */
     public List<Subtask> generateSubtasks(String title, String description) {
-        String prompt = """
-            Break down the following task into 3-5 smaller subtasks in JSON format.
-            Each subtask should have a 'title' field. Return ONLY a valid JSON array.
-
-            Task Title: %s
-            Description: %s
-        """.formatted(title, description == null ? "" : description);
-
-        List<Subtask> subtasks = new ArrayList<>();
         try {
-            String jsonResponse = chatModelServiceHF.generateFlashcards(prompt); // reuse for text output
-            ObjectMapper mapper = new ObjectMapper();
-            List<Map<String, String>> data = mapper.readValue(jsonResponse, new TypeReference<>() {});
+            String prompt = "Break down the following task into smaller subtasks. " +
+                    "Return a JSON array with objects having 'title' and 'description'.\n" +
+                    "Task: " + title + "\nDetails: " + (description != null ? description : "");
 
-            for (Map<String, String> item : data) {
+            String aiResponse = chatModelServiceHF.callChat(prompt);
+
+            ObjectMapper mapper = new ObjectMapper();
+            List<Map<String, String>> items = mapper.readValue(aiResponse,
+                    new TypeReference<List<Map<String, String>>>() {});
+
+            List<Subtask> subtasks = new ArrayList<>();
+            for (Map<String, String> item : items) {
                 Subtask st = new Subtask();
                 st.setTitle(item.get("title"));
+                st.setCompleted(false);
+                st.setDescription(item.get("description")); // optional, you may need to add a field
                 subtasks.add(st);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+            return subtasks;
 
-        return subtasks;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to generate subtasks via AI", e);
+        }
     }
 }

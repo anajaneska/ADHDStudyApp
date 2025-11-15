@@ -20,9 +20,7 @@ export default function TaskInput({ newTask, setNewTask, addTask }) {
           <input
             type="datetime-local"
             value={newTask.plannedStart}
-            onChange={(e) =>
-              setNewTask({ ...newTask, plannedStart: e.target.value })
-            }
+            onChange={(e) => setNewTask({ ...newTask, plannedStart: e.target.value })}
           />
         </label>
         <label>
@@ -30,9 +28,7 @@ export default function TaskInput({ newTask, setNewTask, addTask }) {
           <input
             type="datetime-local"
             value={newTask.dueDate}
-            onChange={(e) =>
-              setNewTask({ ...newTask, dueDate: e.target.value })
-            }
+            onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
           />
         </label>
       </div>

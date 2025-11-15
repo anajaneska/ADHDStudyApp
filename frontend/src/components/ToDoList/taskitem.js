@@ -1,11 +1,14 @@
 import React, { useState } from "react";
 import dayjs from "dayjs";
+import SubtaskItem from "./subtaskitem";
 
 export default function TaskItem({
   task,
   toggleComplete,
   deleteTask,
   editTask,
+  estimateTime,
+  breakdownTask,
   focusedTaskId,
 }) {
   const [isEditing, setIsEditing] = useState(false);
@@ -61,12 +64,8 @@ export default function TaskItem({
             />
           </label>
           <div className="edit-actions">
-            <button className="save" onClick={handleSave}>
-              💾 Зачувај
-            </button>
-            <button className="cancel" onClick={() => setIsEditing(false)}>
-              Откажи
-            </button>
+            <button className="save" onClick={handleSave}>💾 Зачувај</button>
+            <button className="cancel" onClick={() => setIsEditing(false)}>Откажи</button>
           </div>
         </div>
       ) : (
@@ -82,6 +81,11 @@ export default function TaskItem({
             <div className="task-texts">
               <h3>{task.title}</h3>
               {task.description && <p>{task.description}</p>}
+
+              {task.estimatedMinutes != null && (
+                <small>⏱️ Проценето време: {task.estimatedMinutes} минути</small>
+              )}
+
               <small>
                 {task.plannedStart &&
                   `Почеток: ${dayjs(task.plannedStart).format("DD/MM HH:mm")} `}
@@ -95,6 +99,23 @@ export default function TaskItem({
             <div className="task-actions">
               <button onClick={() => setIsEditing(true)}>✏️</button>
               <button onClick={() => deleteTask(task.id)}>🗑️</button>
+              <button onClick={() => estimateTime(task.id)}>estimate</button>
+              <button onClick={() => breakdownTask(task.id)}>breakdown</button>
+            </div>
+          )}
+
+          {/* === SUBTASK SECTION === */}
+          {task.subtasks && task.subtasks.length > 0 && (
+            <div className="subtask-list">
+              <h4>Потзадачи:</h4>
+              {task.subtasks.map((st) => (
+                <SubtaskItem
+                  key={st.id}
+                  subtask={st}
+                  reloadTask={() => breakdownTask(task.id)}
+                  token={localStorage.getItem("jwt")}
+                />
+              ))}
             </div>
           )}
         </div>

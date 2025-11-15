@@ -79,6 +79,36 @@ export default function ToDoList({ fetchTasks, focusedTaskId }) {
     }
   };
 
+  const estimateTime = async (taskId) => {
+    try {
+      const res = await instance.post(
+        `/tasks/${taskId}/estimate`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setTasks((prev) =>
+        prev.map((t) => (t.id === taskId ? res.data : t))
+      );
+    } catch (err) {
+      console.error("Error estimating time:", err);
+    }
+  };
+
+  const breakdownTask = async (taskId) => {
+    try {
+      const res = await instance.post(
+        `/tasks/${taskId}/breakdown`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setTasks((prev) => prev.map((t) => (t.id === taskId ? res.data : t)));
+    } catch (err) {
+      console.error("Error breaking down task:", err);
+    }
+  };
+
   const filteredTasks = focusedTaskId
     ? tasks.filter((t) => t.id === focusedTaskId)
     : tasks;
@@ -105,6 +135,8 @@ export default function ToDoList({ fetchTasks, focusedTaskId }) {
               toggleComplete={toggleComplete}
               deleteTask={deleteTask}
               editTask={editTask}
+              estimateTime={estimateTime}
+              breakdownTask={breakdownTask}
             />
           ))
         )}
