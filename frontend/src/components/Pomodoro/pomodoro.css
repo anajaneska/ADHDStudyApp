@@ -1,98 +1,146 @@
 .pomodoro-container {
-  background: linear-gradient(135deg, #89f7fe, #66a6ff);
-  color: #1a1a1a;
-  border-radius: 20px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
-  width: 320px;
-  padding: 24px;
-  margin: auto;
+  position: relative;
+  max-width: 800px;       /* Bigger container */
+  margin: 2rem auto;
+  padding: 3rem;           /* Keep padding */
+  background: #f5f5f5;
+  border-radius: 16px;
   text-align: center;
-  font-family: "Poppins", sans-serif;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.15);
 }
 
-.timer {
-  font-size: 4rem;
-  font-weight: bold;
-  margin: 15px 0;
-  color: #222;
+/* Header: title left, gear right */
+.pomodoro-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
 }
 
-.task span {
-  font-style: italic;
-  color: #333;
+.pomodoro-title {
+  margin-right: 3;
+  font-size: 1rem;
+  color: rgba(139, 127, 199, 1); /* Match timer color */
 }
 
+/* Gear icon in top right */
+.settings-gear {
+  cursor: pointer;
+  color: #555;
+}
+
+/* Cycle switch buttons on top */
+.cycle-switch-top {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.cycle-switch-top .btn {
+  padding: 0.5rem 1rem;
+}
+
+/* Timer display */
+.pomodoro-display .timer {
+  font-size: 6rem;              
+  margin: 1rem 0;
+  color: rgba(139, 127, 199, 1);             
+}
+
+/* Start / Reset buttons below */
+.pomodoro-controls {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+/* Active cycle button */
+.btn-active {
+  background-color: rgba(139, 127, 199, 1);
+  color: white;
+}
+
+/* Buttons */
 .btn {
   border: none;
-  padding: 10px 20px;
-  border-radius: 12px;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
   cursor: pointer;
-  transition: transform 0.2s, background 0.2s;
-  font-weight: 600;
+  font-size: 1rem;
+  transition: 0.3s;
 }
 
 .btn:hover {
-  transform: scale(1.05);
+  opacity: 0.85;
 }
 
 .btn-start {
-  background-color: #4ade80;
+  background-color: rgba(139, 127, 199, 1);
+  color: white;
 }
 
 .btn-pause {
-  background-color: #facc15;
+  background-color: #f44336;
+  color: white;
 }
 
 .btn-reset {
-  background-color: #d1d5db;
+  background-color: #9e9e9e;
+  color: white;
 }
 
-.btn-save {
-  background-color: #4ade80;
-}
-
-.btn-cancel {
-  background-color: #f87171;
-}
-
-.btn-edit {
-  background-color: #a78bfa;
-}
-
-.btn-active {
-  background-color: #fff;
-  color: #000;
-}
-
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.modal {
-  background: #fff;
+.settings-modal {
+  margin: 2rem auto;
+  padding: 2rem;
+  background: #ffffff;
   border-radius: 16px;
-  padding: 24px;
-  width: 320px;
-  max-height: 400px;
-  overflow-y: auto;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+  max-width: 400px;
   text-align: center;
 }
 
-.modal button {
-  display: block;
-  width: 100%;
-  margin: 6px 0;
-  background: #e5e7eb;
-  border-radius: 10px;
-  padding: 8px;
-  transition: background 0.2s;
+.settings-modal h3 {
+  margin-bottom: 1rem;
+  color: #8b7fc7;
 }
 
-.modal button:hover {
-  background: #dbeafe;
+.settings-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.settings-inputs label {
+  display: flex;
+  flex-direction: column;
+  font-weight: 500;
+  font-size: 1rem;
+  color: #4a5565;
+}
+
+.settings-inputs input {
+  margin-top: 0.25rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.settings-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.btn-save {
+  background-color: #8b7fc7;
+  color: white;
+}
+
+.btn-cancel {
+  background-color: #9e9e9e;
+  color: white;
 }

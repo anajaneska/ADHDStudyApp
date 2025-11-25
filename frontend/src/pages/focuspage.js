@@ -26,20 +26,21 @@ export default function FocusPage() {
     fetchTasks();
   }, []);
 
-  return (
-    <div className="flex flex-col items-center min-h-screen bg-gradient-to-br from-blue-100 to-purple-200 p-8">
-      <h1 className="text-3xl font-bold mb-6 text-gray-800">Focus Mode</h1>
-      <div className="flex flex-col items-center space-y-8 w-full max-w-3xl">
-        <PomodoroTimer
-          tasks={tasks}
-          selectedTask={selectedTask}
-          setSelectedTask={setSelectedTask}
-        />
-        <ToDoList
-          fetchTasks={fetchTasks}
-          focusedTaskId={selectedTask?.id}
-        />
-      </div>
+return (
+  <div className="flex flex-col items-center min-h-screen bg-gradient-to-br from-blue-100 to-purple-200 p-8">
+    <br />
+    <br />
+    <div className="flex flex-row items-start justify-center w-full max-w-5xl gap-8">
+      <PomodoroTimer
+        tasks={tasks}
+        selectedTask={selectedTask}
+        setSelectedTask={setSelectedTask}
+      />
+      <ToDoList
+        fetchTasks={fetchTasks}
+        focusedTaskId={selectedTask?.id}
+      />
     </div>
-  );
+  </div>
+);
 }

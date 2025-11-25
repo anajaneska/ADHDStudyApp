@@ -4,6 +4,7 @@ import PomodoroDisplay from "./pomodorodisplay";
 import PomodoroControls from "./pomodorocontrols";
 import PomodoroSettings from "./pomodorosettings";
 import TaskModal from "./taskmodal";
+import { FaCog } from "react-icons/fa";
 import "./pomodoro.css";
 
 export default function PomodoroTimer({ tasks, selectedTask, setSelectedTask }) {
@@ -102,40 +103,66 @@ export default function PomodoroTimer({ tasks, selectedTask, setSelectedTask }) 
 
   return (
     <div className="pomodoro-container">
-      <PomodoroDisplay
-        cycle={cycle}
-        timeLeft={timeLeft}
-        selectedTask={selectedTask}
-      />
-
-      <PomodoroControls
-        isRunning={isRunning}
-        setIsRunning={setIsRunning}
-        resetTimer={resetTimer}
-        cycle={cycle}
-        switchCycle={switchCycle}
-        setShowTaskModal={setShowTaskModal}
-      />
-
-      <PomodoroSettings
-        editMode={editMode}
-        setEditMode={setEditMode}
-        workDuration={workDuration}
-        breakDuration={breakDuration}
-        setWorkDuration={setWorkDuration}
-        setBreakDuration={setBreakDuration}
-        switchCycle={switchCycle}
-        cycle={cycle}
-      />
-
-      {showTaskModal && (
-        <TaskModal
-          tasks={tasks}
-          setShowTaskModal={setShowTaskModal}
-          setSelectedTask={setSelectedTask}
-          setIsRunning={setIsRunning}
-        />
-      )}
+  {/* Top header: title left, gear right */}
+  <div className="pomodoro-header">
+    <h2 className="pomodoro-title">Pomodoro timer</h2>
+    <div className="settings-gear" onClick={() => setEditMode(true)}>
+      <FaCog size={24} />
     </div>
+  </div>
+
+  {/* Top: Focus / Break buttons */}
+  <div className="cycle-switch-top">
+    <button
+      className={`btn ${cycle === "work" ? "btn-active" : ""}`}
+      onClick={() => switchCycle("work")}
+    >
+      Focus ({workDuration})
+    </button>
+    <button
+      className={`btn ${cycle === "break" ? "btn-active" : ""}`}
+      onClick={() => switchCycle("break")}
+    >
+      Break ({breakDuration})
+    </button>
+  </div>
+
+  {/* Timer Display */}
+  <PomodoroDisplay
+    cycle={cycle}
+    timeLeft={timeLeft}
+    selectedTask={selectedTask}
+  />
+
+  {/* Bottom: Start / Reset buttons */}
+  <PomodoroControls
+    isRunning={isRunning}
+    setIsRunning={setIsRunning}
+    resetTimer={resetTimer}
+    cycle={cycle}
+    setShowTaskModal={setShowTaskModal}
+  />
+
+  {/* Settings modal */}
+  <PomodoroSettings
+    editMode={editMode}
+    setEditMode={setEditMode}
+    workDuration={workDuration}
+    breakDuration={breakDuration}
+    setWorkDuration={setWorkDuration}
+    setBreakDuration={setBreakDuration}
+    switchCycle={switchCycle}
+    cycle={cycle}
+  />
+
+  {showTaskModal && (
+    <TaskModal
+      tasks={tasks}
+      setShowTaskModal={setShowTaskModal}
+      setSelectedTask={setSelectedTask}
+      setIsRunning={setIsRunning}
+    />
+  )}
+</div>
   );
 }

@@ -1,18 +1,13 @@
 /* --- General Layout --- */
 .header {
   width: 100%;
-  background-color: #2a3f5f; /* Muted calming blue-gray */
-  color: #f8fafc; /* Off-white for reduced glare */
+  background-color: rgba(255, 255, 255, 0.8);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   position: fixed;
   top: 0;
   left: 0;
   z-index: 50;
   transition: background-color 0.3s ease;
-}
-
-.header:hover {
-  background-color: #324a6b; /* Slightly lighter on hover */
 }
 
 .header-container {
@@ -28,13 +23,19 @@
   height: 70px;
 }
 
+/* --- Left side: App Name + Navigation --- */
+.left-section {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
 /* --- App Title --- */
 .app-name {
   font-size: 1.8rem;
   font-weight: 700;
   letter-spacing: 1px;
-  color: #fffae5; /* Slightly warm tint to reduce harshness */
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  color: rgba(74, 85, 101, 1);
 }
 
 /* --- Navigation Links --- */
@@ -44,7 +45,10 @@
 }
 
 .nav-link {
-  color: #e2e8f0;
+  display: flex;          /* Make link a flex container */
+  align-items: center;    /* Vertically center icon and text */
+  gap: 6px;               /* Space between icon and text */
+  color: rgba(74, 85, 101, 1);
   text-decoration: none;
   font-size: 1.1rem;
   padding: 6px 10px;
@@ -53,24 +57,46 @@
 }
 
 .nav-link:hover {
-  background-color: #415a7a;
-  color: #fff9db;
+  background-color: rgba(211, 221, 221, 0.6);
+  color: black;
   transform: translateY(-2px);
 }
 
 /* --- Active Link --- */
 .active-link {
-  background-color: #647fa0;
-  color: #fff9db;
+  background-color: rgba(139, 127, 199, 1);
+  color: rgba(255, 255, 255, 1);
   font-weight: 600;
 }
 
-/* --- Accessibility & ADHD-friendly Design --- */
-.nav-link:focus {
-  outline: 3px solid #ffda77;
-  outline-offset: 2px;
+/* --- Right side: Login/Register/Logout --- */
+.auth-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
+.auth-link {
+  font-size: 1.1rem;
+}
+
+/* --- Logout Button --- */
+.logout-btn {
+  background-color: rgba(139, 127, 199, 1);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+.logout-btn:hover {
+  background-color: #6c63b5;
+}
+
+/* --- Fonts & General Styling --- */
 .header,
 .nav-link,
 .app-name {
@@ -82,9 +108,14 @@
 @media (max-width: 768px) {
   .header-inner {
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
     height: auto;
     padding: 10px 0;
+  }
+
+  .left-section {
+    flex-direction: column;
+    gap: 10px;
   }
 
   .nav-links {
@@ -100,5 +131,9 @@
   .nav-link {
     font-size: 1rem;
     padding: 4px 8px;
+  }
+
+  .auth-section {
+    gap: 0.8rem;
   }
 }

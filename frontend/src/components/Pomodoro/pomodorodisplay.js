@@ -9,10 +9,9 @@ export default function PomodoroDisplay({ cycle, timeLeft, selectedTask }) {
 
   return (
     <div className="pomodoro-display">
-      <h2>{cycle === "work" ? "Фокус време" : "Пауза"}</h2>
       <p className="timer">{formatTime(timeLeft)}</p>
       {selectedTask && (
-        <p className="task">Задача: <span>{selectedTask.title}</span></p>
+        <p className="task">Task: <span>{selectedTask.title}</span></p>
       )}
     </div>
   );

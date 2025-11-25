@@ -20,18 +20,31 @@ export default function PomodoroSettings({
     setEditMode(false);
   };
 
-  return editMode ? (
-    <div className="settings">
-      <input
-        type="number"
-        value={tempWork}
-        onChange={(e) => setTempWork(parseInt(e.target.value))}
-      />
-      <input
-        type="number"
-        value={tempBreak}
-        onChange={(e) => setTempBreak(parseInt(e.target.value))}
-      />
+  if (!editMode) return null;
+
+  return (
+    <div className="settings-modal">
+      <h3>Change Timer Durations</h3>
+      <div className="settings-inputs">
+        <label>
+          Focus Duration (minutes):
+          <input
+            type="number"
+            min="1"
+            value={tempWork}
+            onChange={(e) => setTempWork(parseInt(e.target.value))}
+          />
+        </label>
+        <label>
+          Break Duration (minutes):
+          <input
+            type="number"
+            min="1"
+            value={tempBreak}
+            onChange={(e) => setTempBreak(parseInt(e.target.value))}
+          />
+        </label>
+      </div>
       <div className="settings-buttons">
         <button onClick={saveSettings} className="btn btn-save">
           Save
@@ -40,12 +53,6 @@ export default function PomodoroSettings({
           Cancel
         </button>
       </div>
-    </div>
-  ) : (
-    <div className="settings">
-      <button onClick={() => setEditMode(true)} className="btn btn-edit">
-        Измени време
-      </button>
     </div>
   );
 }
