@@ -16,15 +16,16 @@ export default function TaskInput({ newTask, setNewTask, addTask }) {
       />
       <div className="task-dates">
         <label>
-          Почеток:
+          Start:
           <input
             type="datetime-local"
             value={newTask.plannedStart}
             onChange={(e) => setNewTask({ ...newTask, plannedStart: e.target.value })}
           />
         </label>
+        <br/>
         <label>
-          Краен рок:
+         Due date:
           <input
             type="datetime-local"
             value={newTask.dueDate}
@@ -32,7 +33,7 @@ export default function TaskInput({ newTask, setNewTask, addTask }) {
           />
         </label>
       </div>
-      <button onClick={addTask}>Додади задача</button>
+      <button onClick={addTask}>Add task</button>
     </div>
   );
 }

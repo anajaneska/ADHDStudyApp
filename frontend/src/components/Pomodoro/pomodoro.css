@@ -1,8 +1,7 @@
 .pomodoro-container {
   position: relative;
-  max-width: 800px;       /* Bigger container */
-  margin: 2rem auto;
-  padding: 3rem;           /* Keep padding */
+  width: 100%;      
+  padding: 3rem;   
   background: #f5f5f5;
   border-radius: 16px;
   text-align: center;
@@ -27,6 +26,9 @@
 .settings-gear {
   cursor: pointer;
   color: #555;
+  position: absolute;
+  top: 10px;
+  right: 10px;
 }
 
 /* Cycle switch buttons on top */

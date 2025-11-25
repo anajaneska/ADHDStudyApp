@@ -1,4 +1,3 @@
-// src/pages/FocusPage.jsx
 import React, { useState, useEffect } from "react";
 import PomodoroTimer from "../components/Pomodoro/pomodoro.js";
 import ToDoList from "../components/ToDoList/todolist.js";
@@ -26,20 +25,27 @@ export default function FocusPage() {
     fetchTasks();
   }, []);
 
-return (
-  <div className="flex flex-col items-center min-h-screen bg-gradient-to-br from-blue-100 to-purple-200 p-8">
-    <br />
-    <br />
-    <div className="flex flex-row items-start justify-center w-full max-w-5xl gap-8">
-      <PomodoroTimer
-        tasks={tasks}
-        selectedTask={selectedTask}
-        setSelectedTask={setSelectedTask}
-      />
-      <ToDoList
-        fetchTasks={fetchTasks}
-        focusedTaskId={selectedTask?.id}
-      />
+  return (
+  <div className="min-h-screen flex justify-center items-start pt-32 px-8">
+    <div className="flex flex-row justify-center items-start gap-12 max-w-[1400px] w-full">
+
+      {/* Pomodoro */}
+      <div className="flex justify-center" style={{ width: "420px" }}>
+        <PomodoroTimer
+          tasks={tasks}
+          selectedTask={selectedTask}
+          setSelectedTask={setSelectedTask}
+        />
+      </div>
+
+      {/* To-Do List */}
+      <div className="flex-1 max-w-[520px]">
+        <ToDoList
+          fetchTasks={fetchTasks}
+          focusedTaskId={selectedTask?.id}
+        />
+      </div>
+
     </div>
   </div>
 );

@@ -6,6 +6,8 @@ import "./todolist.css";
 
 export default function ToDoList({ fetchTasks, focusedTaskId }) {
   const [tasks, setTasks] = useState([]);
+  const [showAddModal, setShowAddModal] = useState(false);
+
   const [newTask, setNewTask] = useState({
     title: "",
     description: "",
@@ -38,7 +40,9 @@ export default function ToDoList({ fetchTasks, focusedTaskId }) {
       await instance.post(`/tasks/${userId}`, newTask, {
         headers: { Authorization: `Bearer ${token}` },
       });
+
       setNewTask({ title: "", description: "", dueDate: "", plannedStart: "" });
+      setShowAddModal(false);
       fetchTasks?.();
       loadTasks();
     } catch (error) {
@@ -115,17 +119,40 @@ export default function ToDoList({ fetchTasks, focusedTaskId }) {
 
   return (
     <div className="todo-container">
-      <h2 className="todo-title">
-        {focusedTaskId ? "Фокусирана задача" : "To-Do Листа"}
-      </h2>
 
+      {/* --- TOP BAR --- */}
       {!focusedTaskId && (
-        <TaskInput newTask={newTask} setNewTask={setNewTask} addTask={addTask} />
+        <div className="top-bar">
+          <h3 className="todo-title">To-Do List</h3>
+          <button className="add-btn" onClick={() => setShowAddModal(true)}>
+            + Add Task
+          </button>
+        </div>
       )}
 
+      {/* --- ADD TASK MODAL --- */}
+      {showAddModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3>Add task</h3>
+
+            <TaskInput
+              newTask={newTask}
+              setNewTask={setNewTask}
+              addTask={addTask}
+            />
+
+            <button className="close-modal" onClick={() => setShowAddModal(false)}>
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* --- TASK LIST --- */}
       <ul className="todo-list">
         {filteredTasks.length === 0 ? (
-          <p className="no-tasks">Нема задачи.</p>
+          <p className="no-tasks">No tasks.</p>
         ) : (
           filteredTasks.map((t) => (
             <TaskItem
