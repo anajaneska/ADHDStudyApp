@@ -6,13 +6,14 @@ import "./todolist.css";
 
 export default function ToDoList({ fetchTasks, focusedTaskId }) {
   const [tasks, setTasks] = useState([]);
+  const [tags, setTags] = useState([]);
   const [showAddModal, setShowAddModal] = useState(false);
-
   const [newTask, setNewTask] = useState({
     title: "",
     description: "",
     dueDate: "",
     plannedStart: "",
+    tagIds: [],
   });
 
   const userId = localStorage.getItem("userId");
@@ -24,14 +25,26 @@ export default function ToDoList({ fetchTasks, focusedTaskId }) {
       const res = await instance.get(`/tasks/${userId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setTasks(res.data);
+      setTasks(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error("Error loading tasks:", err);
     }
   };
 
+  const loadTags = async () => {
+    try {
+      const res = await instance.get(`/tags/${userId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setTags(Array.isArray(res.data) ? res.data : []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   useEffect(() => {
     loadTasks();
+    loadTags();
   }, [userId]);
 
   const addTask = async () => {
@@ -40,13 +53,11 @@ export default function ToDoList({ fetchTasks, focusedTaskId }) {
       await instance.post(`/tasks/${userId}`, newTask, {
         headers: { Authorization: `Bearer ${token}` },
       });
-
-      setNewTask({ title: "", description: "", dueDate: "", plannedStart: "" });
+      setNewTask({ title: "", description: "", dueDate: "", plannedStart: "", tagIds: [] });
       setShowAddModal(false);
-      fetchTasks?.();
-      loadTasks();
-    } catch (error) {
-      console.error("Error adding task:", error);
+      await loadTasks();
+    } catch (err) {
+      console.error("Error adding task:", err);
     }
   };
 
@@ -57,7 +68,7 @@ export default function ToDoList({ fetchTasks, focusedTaskId }) {
       });
       setTasks((prev) => prev.map((t) => (t.id === id ? res.data : t)));
     } catch (err) {
-      console.error("Error completing task:", err);
+      console.error(err);
     }
   };
 
@@ -66,20 +77,50 @@ export default function ToDoList({ fetchTasks, focusedTaskId }) {
       await instance.delete(`/tasks/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setTasks(tasks.filter((t) => t.id !== id));
+      setTasks((prev) => prev.filter((t) => t.id !== id));
     } catch (err) {
-      console.error("Error deleting task:", err);
+      console.error(err);
     }
   };
 
-  const editTask = async (id, updatedData) => {
+const editTask = async (id, updatedData) => {
+  try {
+    const res = await instance.put(
+      `/tasks/${id}`,
+      {
+        ...updatedData,
+        tagIds: updatedData.tagIds || []   // IMPORTANT!!!
+      },
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
+    setTasks((prev) => prev.map((t) => (t.id === id ? res.data : t)));
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+  const addTagToTask = async (taskId, tagId) => {
     try {
-      const res = await instance.put(`/tasks/${id}`, updatedData, {
+      const res = await instance.post(`/tasks/${taskId}/tags/${tagId}`, null, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setTasks((prev) => prev.map((t) => (t.id === id ? res.data : t)));
+      setTasks((prev) => prev.map((t) => (t.id === taskId ? res.data : t)));
     } catch (err) {
-      console.error("Error editing task:", err);
+      console.error(err);
+    }
+  };
+
+  const removeTagFromTask = async (taskId, tagId) => {
+    try {
+      const res = await instance.delete(`/tasks/${taskId}/tags/${tagId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setTasks((prev) => prev.map((t) => (t.id === taskId ? res.data : t)));
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -99,7 +140,7 @@ export default function ToDoList({ fetchTasks, focusedTaskId }) {
     }
   };
 
-  const breakdownTask = async (taskId) => {
+   const breakdownTask = async (taskId) => {
     try {
       const res = await instance.post(
         `/tasks/${taskId}/breakdown`,
@@ -113,43 +154,31 @@ export default function ToDoList({ fetchTasks, focusedTaskId }) {
     }
   };
 
-  const filteredTasks = focusedTaskId
-    ? tasks.filter((t) => t.id === focusedTaskId)
-    : tasks;
+  const filteredTasks = Array.isArray(tasks)
+    ? focusedTaskId
+      ? tasks.filter((t) => t.id === focusedTaskId)
+      : tasks
+    : [];
 
   return (
     <div className="todo-container">
-
-      {/* --- TOP BAR --- */}
       {!focusedTaskId && (
         <div className="top-bar">
           <h3 className="todo-title">To-Do List</h3>
-          <button className="add-btn" onClick={() => setShowAddModal(true)}>
-            + Add Task
-          </button>
+          <button className="add-btn" onClick={() => setShowAddModal(true)}>+ Add Task</button>
         </div>
       )}
 
-      {/* --- ADD TASK MODAL --- */}
       {showAddModal && (
         <div className="modal-overlay">
           <div className="modal-content">
             <h3>Add task</h3>
-
-            <TaskInput
-              newTask={newTask}
-              setNewTask={setNewTask}
-              addTask={addTask}
-            />
-
-            <button className="close-modal" onClick={() => setShowAddModal(false)}>
-              Cancel
-            </button>
+            <TaskInput newTask={newTask} setNewTask={setNewTask} addTask={addTask} tags={tags} />
+            <button className="close-modal" onClick={() => setShowAddModal(false)}>Cancel</button>
           </div>
         </div>
       )}
 
-      {/* --- TASK LIST --- */}
       <ul className="todo-list">
         {filteredTasks.length === 0 ? (
           <p className="no-tasks">No tasks.</p>
@@ -158,10 +187,12 @@ export default function ToDoList({ fetchTasks, focusedTaskId }) {
             <TaskItem
               key={t.id}
               task={t}
-              focusedTaskId={focusedTaskId}
               toggleComplete={toggleComplete}
               deleteTask={deleteTask}
               editTask={editTask}
+              addTagToTask={addTagToTask}
+              removeTagFromTask={removeTagFromTask}
+              tags={tags}
               estimateTime={estimateTime}
               breakdownTask={breakdownTask}
             />

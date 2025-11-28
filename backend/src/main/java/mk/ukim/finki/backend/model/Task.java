@@ -36,4 +36,13 @@ public class Task {
     @JoinColumn(name = "user_id")
     @JsonBackReference("user-task")
     private User user;
+
+    @ManyToMany
+    @JoinTable(
+            name = "task_tags",
+            joinColumns = @JoinColumn(name = "task_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
+    private List<Tag> tags = new ArrayList<>();
+
 }

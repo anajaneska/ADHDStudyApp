@@ -3,6 +3,7 @@ import dayjs from "dayjs";
 import SubtaskItem from "./subtaskitem";
 import { BsClock } from "react-icons/bs";
 import { BiDownArrow, BiPencil, BiTrash } from "react-icons/bi";
+import TagPicker from "./tagpicker";
 
 export default function TaskItem({
   task,
@@ -12,23 +13,28 @@ export default function TaskItem({
   estimateTime,
   breakdownTask,
   focusedTaskId,
+  tags
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [showSubtasks, setShowSubtasks] = useState(false);
 
-  const [editData, setEditData] = useState({
-    title: task.title,
-    description: task.description || "",
-    plannedStart: task.plannedStart
-      ? dayjs(task.plannedStart).format("YYYY-MM-DDTHH:mm")
-      : "",
-    dueDate: task.dueDate ? dayjs(task.dueDate).format("YYYY-MM-DDTHH:mm") : "",
-  });
+const [editData, setEditData] = useState({
+  title: task.title,
+  description: task.description || "",
+  plannedStart: task.plannedStart
+    ? dayjs(task.plannedStart).format("YYYY-MM-DDTHH:mm")
+    : "",
+  dueDate: task.dueDate ? dayjs(task.dueDate).format("YYYY-MM-DDTHH:mm") : "",
+  tagIds: task.tags?.map(t => t.id) || []   // <-- use optional chaining + fallback
+});
 
-  const handleSave = () => {
-    editTask(task.id, editData);
-    setIsEditing(false);
-  };
+const handleSave = () => {
+  editTask(task.id, {
+    ...editData,
+    tagIds: editData.tagIds   // make sure we send tagIds to backend
+  });
+  setIsEditing(false);
+};
 
   return (
     <li className={`task-item ${task.completed ? "completed" : ""}`}>
@@ -67,6 +73,14 @@ export default function TaskItem({
               setEditData({ ...editData, dueDate: e.target.value })
             }
           />
+
+          <TagPicker
+              selectedTagIds={editData.tagIds}   // ✅ use tagIds
+              onTagChange={(newTagIds) =>
+                setEditData({ ...editData, tagIds: newTagIds })   // ✅ update tagIds
+              }
+              tags={tags}  // pass all available tags
+            />
 
           <div className="edit-actions">
             <button className="save" onClick={handleSave}>Save</button>
@@ -114,6 +128,25 @@ export default function TaskItem({
           {task.description && (
             <p className="text-gray-700 text-sm">{task.description}</p>
           )}
+
+          {/* TAGS DISPLAY */}
+          {/* TAGS DISPLAY */}
+{task.tags?.length > 0 && (
+  <div className="flex flex-wrap gap-2 mt-1">
+    {task.tags.map(tag => (
+      <span
+        key={tag.id}
+        style={{ backgroundColor: tag.color }}
+        className="px-2 py-1 rounded-full text-white text-xs"
+      >
+        {tag.name}
+      </span>
+    ))}
+  </div>
+)}
+
+
+
 
           {/* ESTIMATE + DATES */}
           <div className="text-sm text-gray-600 flex flex-wrap gap-4">

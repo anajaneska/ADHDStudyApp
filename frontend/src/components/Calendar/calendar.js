@@ -5,6 +5,7 @@ import enUS from "date-fns/locale/en-US";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import dayjs from "dayjs";
 import instance from "../../custom-axios/axios";
+import "./calendar.css";
 
 const locales = { "en-US": enUS };
 const localizer = dateFnsLocalizer({

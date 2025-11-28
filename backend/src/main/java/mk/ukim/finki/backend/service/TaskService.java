@@ -3,6 +3,7 @@ package mk.ukim.finki.backend.service;
 
 import mk.ukim.finki.backend.model.Subtask;
 import mk.ukim.finki.backend.model.Task;
+import mk.ukim.finki.backend.model.dto.TaskUpdateRequest;
 import mk.ukim.finki.backend.model.exeptions.TaskDoesNotExistException;
 import mk.ukim.finki.backend.repository.TaskRepository;
 import org.springframework.stereotype.Service;
@@ -19,11 +20,12 @@ public interface TaskService {
     Optional<Task> getTaskById(Long id);
 
     void deleteTask(Long id);
-    Task updateTask(Long id, Task updatedTask) throws TaskDoesNotExistException;
+    Task updateTask(Long id, TaskUpdateRequest request);
     Task toggleTaskCompletion(Long id);
     Subtask estimateSubtaskTime(Long subtaskId);
     Task breakdownTask(Long taskId);
     Subtask breakDownSubtask(Long subtaskId);
     Task estimateTaskTime(Long taskId);
+    //List<Task> getTasksByTag(Long userId, Long tagId);
 
 }

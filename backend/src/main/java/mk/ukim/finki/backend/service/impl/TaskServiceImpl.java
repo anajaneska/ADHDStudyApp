@@ -1,9 +1,12 @@
 package mk.ukim.finki.backend.service.impl;
 
 import mk.ukim.finki.backend.model.Subtask;
+import mk.ukim.finki.backend.model.Tag;
 import mk.ukim.finki.backend.model.Task;
+import mk.ukim.finki.backend.model.dto.TaskUpdateRequest;
 import mk.ukim.finki.backend.model.exeptions.TaskDoesNotExistException;
 import mk.ukim.finki.backend.repository.SubtaskRepository;
+import mk.ukim.finki.backend.repository.TagRepository;
 import mk.ukim.finki.backend.repository.TaskRepository;
 import mk.ukim.finki.backend.service.TaskService;
 import mk.ukim.finki.backend.service.impl.AiServiceImpl.AiBreakdownServiceHF;
@@ -19,11 +22,13 @@ public class TaskServiceImpl implements TaskService {
     private final SubtaskRepository subtaskRepository;
     private final AiEstimationServiceHF aiEstimationService;
     private final AiBreakdownServiceHF aiBreakdownService;
-    public TaskServiceImpl(TaskRepository taskRepository, SubtaskRepository subtaskRepository, AiEstimationServiceHF aiEstimationService, AiBreakdownServiceHF aiBreakdownService) {
+    private final TagRepository tagRepository;
+    public TaskServiceImpl(TaskRepository taskRepository, SubtaskRepository subtaskRepository, AiEstimationServiceHF aiEstimationService, AiBreakdownServiceHF aiBreakdownService, TagRepository tagRepository) {
         this.taskRepository = taskRepository;
         this.subtaskRepository = subtaskRepository;
         this.aiEstimationService = aiEstimationService;
         this.aiBreakdownService = aiBreakdownService;
+        this.tagRepository = tagRepository;
     }
     @Override
     public List<Task> getAllTasksForUser(Long userId) {
@@ -42,19 +47,23 @@ public class TaskServiceImpl implements TaskService {
         taskRepository.deleteById(id);
     }
 
-    @Override
-    public Task updateTask(Long id, Task updatedTask) throws TaskDoesNotExistException {
-        return taskRepository.findById(id)
-                .map(task -> {
-                    task.setTitle(updatedTask.getTitle());
-                    task.setDescription(updatedTask.getDescription());
-                    task.setDueDate(updatedTask.getDueDate());
-                    task.setPlannedStart(updatedTask.getPlannedStart());
-                    task.setCompleted(updatedTask.isCompleted());
-                    return taskRepository.save(task);
-                })
-                .orElseThrow(() -> new TaskDoesNotExistException(updatedTask.getId()));
+    public Task updateTask(Long id, TaskUpdateRequest request) {
+        Task task = taskRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Task not found"));
+
+        task.setTitle(request.getTitle());
+        task.setDescription(request.getDescription());
+        task.setPlannedStart(request.getPlannedStart());
+        task.setDueDate(request.getDueDate());
+
+        if (request.getTagIds() != null) {
+            List<Tag> tags = tagRepository.findAllById(request.getTagIds());
+            task.setTags(tags); // <-- THIS REPLACES ALL TAGS WITH NEW ONES
+        }
+
+        return taskRepository.save(task);
     }
+
 
     @Override
     public Task toggleTaskCompletion(Long id) {
@@ -146,4 +155,5 @@ public class TaskServiceImpl implements TaskService {
         parent.getChildren().addAll(children);
         return subtaskRepository.save(parent);
     }
+
 }

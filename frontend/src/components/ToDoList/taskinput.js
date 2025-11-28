@@ -1,19 +1,27 @@
 import React from "react";
+import TagPicker from "./tagpicker";
 
-export default function TaskInput({ newTask, setNewTask, addTask }) {
+export default function TaskInput({ newTask, setNewTask, addTask, tags, userId }) {
+
+  const handleTagChange = (tagIds) => {
+    setNewTask({ ...newTask, tagIds });
+  };
+
   return (
     <div className="task-input">
       <input
         type="text"
-        placeholder="Наслов"
+        placeholder="Title"
         value={newTask.title}
         onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
       />
+
       <textarea
-        placeholder="Опис"
+        placeholder="Description"
         value={newTask.description}
         onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
       />
+
       <div className="task-dates">
         <label>
           Start:
@@ -23,9 +31,9 @@ export default function TaskInput({ newTask, setNewTask, addTask }) {
             onChange={(e) => setNewTask({ ...newTask, plannedStart: e.target.value })}
           />
         </label>
-        <br/>
+        <br />
         <label>
-         Due date:
+          Due date:
           <input
             type="datetime-local"
             value={newTask.dueDate}
@@ -33,7 +41,16 @@ export default function TaskInput({ newTask, setNewTask, addTask }) {
           />
         </label>
       </div>
-      <button onClick={addTask}>Add task</button>
+
+      {/* Tag Picker */}
+      <TagPicker
+        userId={userId}
+        selectedTagIds={newTask.tagIds}
+        onTagChange={handleTagChange}
+        tags = {tags}
+      />
+
+      <button onClick={addTask}>Add Task</button>
     </div>
   );
 }
