@@ -23,7 +23,10 @@ public class Task {
     private String title;
     private String description;
     private LocalDateTime dueDate;
-    private LocalDateTime plannedStart;
+    @Column(name = "start_time")
+    private LocalDateTime start;
+    @Column(name = "end_time")
+    private LocalDateTime end;
     private boolean completed = false;
 
     private Integer estimatedMinutes;

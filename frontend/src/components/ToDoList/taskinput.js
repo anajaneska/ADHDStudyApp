@@ -27,8 +27,16 @@ export default function TaskInput({ newTask, setNewTask, addTask, tags, userId }
           Start:
           <input
             type="datetime-local"
-            value={newTask.plannedStart}
-            onChange={(e) => setNewTask({ ...newTask, plannedStart: e.target.value })}
+            value={newTask.start}
+            onChange={(e) => setNewTask({ ...newTask, start: e.target.value })}
+          />
+        </label>
+        <label>
+          End:
+          <input
+            type="datetime-local"
+            value={newTask.end}
+            onChange={(e) => setNewTask({ ...newTask, end: e.target.value })}
           />
         </label>
         <br />

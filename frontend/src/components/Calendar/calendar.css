@@ -58,11 +58,11 @@
 
 /* --- EVENTS --- */
 .rbc-event {
-  background-color: #6366f1 !important; /* indigo-500 */
+  /* background-color removed! */
   border-radius: 8px !important;
   padding: 2px 6px !important;
   font-size: 12px;
-  color: white !important;
+  color: white !important; /* keep text white */
 }
 
 .rbc-event:hover {

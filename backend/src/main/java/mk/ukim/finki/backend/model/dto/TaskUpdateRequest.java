@@ -9,7 +9,8 @@ import java.util.List;
 public class TaskUpdateRequest {
     private String title;
     private String description;
-    private LocalDateTime plannedStart;
+    private LocalDateTime start;
+    private LocalDateTime end;
     private LocalDateTime dueDate;
     private List<Long> tagIds;
 }

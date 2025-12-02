@@ -39,7 +39,8 @@ public class TaskController {
         Task task = new Task();
         task.setTitle(request.getTitle());
         task.setDescription(request.getDescription());
-        task.setPlannedStart(request.getPlannedStart());
+        task.setStart(request.getStart());
+        task.setEnd(request.getEnd());
         task.setDueDate(request.getDueDate());
         task.setUser(user);
 

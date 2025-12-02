@@ -53,7 +53,8 @@ public class TaskServiceImpl implements TaskService {
 
         task.setTitle(request.getTitle());
         task.setDescription(request.getDescription());
-        task.setPlannedStart(request.getPlannedStart());
+        task.setStart(request.getStart());
+        task.setEnd(request.getEnd());
         task.setDueDate(request.getDueDate());
 
         if (request.getTagIds() != null) {

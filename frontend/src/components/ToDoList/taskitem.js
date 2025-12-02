@@ -21,8 +21,11 @@ export default function TaskItem({
 const [editData, setEditData] = useState({
   title: task.title,
   description: task.description || "",
-  plannedStart: task.plannedStart
-    ? dayjs(task.plannedStart).format("YYYY-MM-DDTHH:mm")
+  start: task.start
+    ? dayjs(task.start).format("YYYY-MM-DDTHH:mm")
+    : "",
+    end: task.end
+    ? dayjs(task.end).format("YYYY-MM-DDTHH:mm")
     : "",
   dueDate: task.dueDate ? dayjs(task.dueDate).format("YYYY-MM-DDTHH:mm") : "",
   tagIds: task.tags?.map(t => t.id) || []   // <-- use optional chaining + fallback
@@ -59,9 +62,18 @@ const handleSave = () => {
           <label>Start:</label>
           <input
             type="datetime-local"
-            value={editData.plannedStart}
+            value={editData.start}
             onChange={(e) =>
-              setEditData({ ...editData, plannedStart: e.target.value })
+              setEditData({ ...editData, start: e.target.value })
+            }
+          />
+
+          <label>End:</label>
+          <input
+            type="datetime-local"
+            value={editData.end}
+            onChange={(e) =>
+              setEditData({ ...editData, end: e.target.value })
             }
           />
 
@@ -156,8 +168,12 @@ const handleSave = () => {
               </span>
             )}
 
-            {task.plannedStart && (
-              <span>Start: {dayjs(task.plannedStart).format("DD/MM HH:mm")}</span>
+            {task.start && (
+              <span>Start: {dayjs(task.start).format("DD/MM HH:mm")}</span>
+            )}
+
+            {task.end && (
+              <span>End: {dayjs(task.end).format("DD/MM HH:mm")}</span>
             )}
 
             {task.dueDate && (
