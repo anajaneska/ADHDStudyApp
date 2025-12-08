@@ -27,6 +27,7 @@ class App extends Component {
       <Router>
         <Header/>
         <Routes>
+          <Route path="/" element={<FocusPage/>} />
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login onLogin={this.onLogin} />} />
           <Route path="/filedashboard" element={<FileDashboard />} />

@@ -8,6 +8,7 @@ import mk.ukim.finki.backend.repository.DocumentRepository;
 import mk.ukim.finki.backend.repository.SummaryRepository;
 import mk.ukim.finki.backend.service.AiService;
 import mk.ukim.finki.backend.service.SummaryService;
+import mk.ukim.finki.backend.service.impl.AiServiceImpl.ChatModelServiceHF;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -20,6 +21,7 @@ public class SummaryServiceImpl implements SummaryService {
     private final DocumentRepository documentRepository;
     private final SummaryRepository summaryRepository;
     private final AiService aiService;
+    private final ChatModelServiceHF chatModelServiceHF;
 
     @Override
     public Summary generateAndSaveSummary(Long fileId, Long userId) throws IOException {
@@ -27,11 +29,12 @@ public class SummaryServiceImpl implements SummaryService {
                 .orElseThrow(() -> new RuntimeException("Document not found"));
 
         String text = aiService.extractTextFromDocument(document.getFileUrl());
-        String summaryText = aiService.summarize(text);
+        String summaryText = chatModelServiceHF.generateSummary(text);
 
         Summary summary = new Summary();
         summary.setDocument(document);
         summary.setContent(summaryText);
+
 
         return summaryRepository.save(summary);
     }

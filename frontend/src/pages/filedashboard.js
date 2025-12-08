@@ -26,13 +26,31 @@ export default function FileDashboard() {
     setSelectedFile(file);
   };
 
+  // DELETE FILE
+ const handleDelete = async (fileId) => {
+  try {
+    await instance.delete(`/files/${userId}/${fileId}`);
+
+    // Remove from UI
+    setFiles((prev) => prev.filter((f) => f.id !== fileId));
+
+    // If the deleted file was selected, clear the viewer
+    if (selectedFile?.id === fileId) {
+      setSelectedFile(null);
+    }
+
+  } catch (err) {
+    console.error("Delete failed:", err);
+  }
+};
+
   // Upload File
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
 
     const formData = new FormData();
-    formData.append("file", file); // IMPORTANT: must be "file"
+    formData.append("file", file);
 
     try {
       await instance.post(`/files/${userId}/upload`, formData, {
@@ -50,17 +68,17 @@ export default function FileDashboard() {
   return (
     <div className="flex h-screen bg-gray-100 pt-20">
 
-      {/* Sidebar + Upload button */}
+      {/* Sidebar + Upload */}
       <div className="flex flex-col border-r bg-white">
         
         <button
-          className="m-4 px-4 py-2 text-white rounded-xl shadow " style={{ backgroundColor: "rgba(139, 127, 199, 1)" }}
+          className="m-4 px-4 py-2 text-white rounded-xl shadow"
+          style={{ backgroundColor: "rgba(139, 127, 199, 1)" }}
           onClick={() => fileInputRef.current.click()}
         >
           Upload File
         </button>
 
-        {/* Hidden input */}
         <input
           type="file"
           ref={fileInputRef}
@@ -68,7 +86,11 @@ export default function FileDashboard() {
           onChange={handleFileUpload}
         />
 
-        <FileSidebar files={files} onSelect={handleFileClick} />
+        <FileSidebar
+          files={files}
+          onSelect={handleFileClick}
+          onDelete={handleDelete}
+        />
       </div>
 
       {/* Main Viewer */}
