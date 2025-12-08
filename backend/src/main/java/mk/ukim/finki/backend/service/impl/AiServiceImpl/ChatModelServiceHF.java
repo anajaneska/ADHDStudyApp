@@ -91,31 +91,90 @@ public class ChatModelServiceHF {
         return String.join(" ", sentences);
     }
 
-    private List<Map<String, String>> fallbackSentenceSplit(String raw) {
-        List<Map<String, String>> list = new ArrayList<>();
+    public String generateQuiz(String text) throws IOException {
+        if (text == null || text.isBlank()) return "[]";
 
-        String[] parts = raw.split("(?<=[.!?])\\s+");
+        String prompt =
+                "Create a quiz with EXACTLY 5 multiple-choice questions based ONLY on the text.\n" +
+                        "Return ONLY a JSON array. Each item MUST be:\n" +
+                        "{\n" +
+                        "  \"question\": \"...\",\n" +
+                        "  \"options\": [\"A: ...\", \"B: ...\", \"C: ...\", \"D: ...\"],\n" +
+                        "  \"correctAnswer\": \"A\"\n" +
+                        "}\n" +
+                        "The options MUST contain full text.\n" +
+                        "Text:\n" + text;
 
-        for (String p : parts) {
-            String s = p.trim();
-            if (!s.isEmpty()) {
-                list.add(Map.of("sentence", s));
-            }
-            if (list.size() >= 10) break;
+        String result = callChat(prompt);
+
+        // --- Clean up the response ---
+        if (result.contains("```")) {
+            result = result.replaceAll("```json", "")
+                    .replaceAll("```", "")
+                    .trim();
         }
 
-        return list;
+        int idx = result.indexOf("[");
+        if (idx != -1) result = result.substring(idx).trim();
+
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode node;
+        try {
+            node = mapper.readTree(result);
+            if (!node.isArray()) node = mapper.createArrayNode();
+        } catch (Exception e) {
+            node = mapper.createArrayNode();
+        }
+
+        List<Map<String, Object>> quizItems = new ArrayList<>();
+
+        for (JsonNode n : node) {
+            String question = n.path("question").asText("").trim();
+            if (question.isEmpty()) continue;
+
+            // --- OPTIONS ---
+            List<String> gatheredOptions = new ArrayList<>();
+            JsonNode optionsNode = n.path("options");
+
+            if (optionsNode.isArray()) {
+                for (JsonNode o : optionsNode) {
+                    String opt = o.asText("").trim();
+                    if (opt.isEmpty()) continue;
+
+                    // Normalize A. → A:
+                    opt = opt.replace("A.", "A:").replace("B.", "B:")
+                            .replace("C.", "C:").replace("D.", "D:");
+
+                    gatheredOptions.add(opt);
+                }
+            }
+
+            if (gatheredOptions.size() < 4) continue;
+
+            List<String> options = new ArrayList<>(gatheredOptions.subList(0, 4));
+
+            // --- CORRECT ANSWER ---
+            String correct = n.path("correctAnswer").asText("").trim().toUpperCase();
+
+            String fullCorrectOption = options.stream()
+                    .filter(o -> o.toUpperCase().startsWith(correct + ":"))
+                    .findFirst()
+                    .orElse(options.get(0)); // fallback
+
+            quizItems.add(Map.of(
+                    "question", question,
+                    "options", options,
+                    "correctAnswer", fullCorrectOption
+            ));
+
+            if (quizItems.size() == 5) break;
+        }
+
+        return mapper.writeValueAsString(quizItems);
     }
 
 
 
-    public String generateQuiz(String text) throws IOException {
-        String prompt =
-                "Create a quiz with 5 multiple choice questions (A-D). " +
-                        "Return JSON array with fields question, options, correctAnswer.\nText: " + text;
-
-        return callChat(prompt);
-    }
 
     public String callChat(String prompt) throws IOException {
         Map<String, Object> body = Map.of(
@@ -143,41 +202,9 @@ public class ChatModelServiceHF {
 
         return content;
     }
-    public String generateSubtasks(String text) throws IOException {
-        String prompt =
-                "Break down this task into 5-8 smaller subtasks. " +
-                        "Return ONLY a JSON array of strings. No explanation.\n" +
-                        "Task: " + text;
 
-        String result = callChat(prompt);
-
-        if (result.contains("[")) {
-            result = result.substring(result.indexOf("["));
-        }
-
-        if (result.contains("```")) {
-            result = result.replace("```json", "").replace("```", "").trim();
-        }
-
-        return result;
-    }
     public String generateEstimation(String prompt) throws IOException {
         return callChat(prompt); // whatever your wrapper is
-    }
-    private List<String> splitByWordsSafe(String text, int maxWords) {
-        String[] words = text.split("\\s+");
-        List<String> chunks = new ArrayList<>();
-        StringBuilder current = new StringBuilder();
-
-        for (String w : words) {
-            if (current.length() + w.length() + 1 > maxWords) {
-                chunks.add(current.toString().trim());
-                current = new StringBuilder();
-            }
-            current.append(w).append(" ");
-        }
-        if (current.length() > 0) chunks.add(current.toString().trim());
-        return chunks;
     }
 
     // -----------------------
