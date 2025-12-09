@@ -59,7 +59,7 @@ public class TaskServiceImpl implements TaskService {
 
         if (request.getTagIds() != null) {
             List<Tag> tags = tagRepository.findAllById(request.getTagIds());
-            task.setTags(tags); // <-- THIS REPLACES ALL TAGS WITH NEW ONES
+            task.setTags(tags);
         }
 
         return taskRepository.save(task);
@@ -75,7 +75,6 @@ public class TaskServiceImpl implements TaskService {
                 })
                 .orElseThrow(() -> new TaskDoesNotExistException(id));
     }
-    //
     public Task estimateTaskTime(Long taskId) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Task not found"));

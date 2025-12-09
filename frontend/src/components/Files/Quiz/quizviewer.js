@@ -10,7 +10,7 @@ export default function QuizViewer({ file }) {
 
   const userId = localStorage.getItem("userId");
 
-  // Fetch quiz whenever the file changes
+  // Fetch quiz
   useEffect(() => {
     const fetchQuiz = async () => {
       setLoading(true);
@@ -24,8 +24,7 @@ export default function QuizViewer({ file }) {
             }))
           : [];
         setQuiz(data);
-      } catch (err) {
-        console.error("Error fetching quiz:", err);
+      } catch {
         setQuiz([]);
       } finally {
         setLoading(false);
@@ -59,6 +58,19 @@ export default function QuizViewer({ file }) {
     }
   };
 
+  // DELETE QUIZ
+  const deleteQuiz = async () => {
+    try {
+      await instance.delete(`/files/${file.id}/quiz`);
+      setQuiz([]);
+      setAnswers({});
+      setSubmitted(false);
+      setScore(0);
+    } catch (err) {
+      console.error("Error deleting quiz:", err);
+    }
+  };
+
   const handleSelect = (qIdx, option) => {
     if (!submitted) {
       setAnswers({ ...answers, [qIdx]: option });
@@ -88,50 +100,60 @@ export default function QuizViewer({ file }) {
       )}
 
       {quiz.length > 0 && (
-        <div className="space-y-4 mt-4">
-          {submitted && (
-            <div className="text-xl font-bold mb-4">
-              Your Score: {score} / {quiz.length}
-            </div>
-          )}
+        <>
+          {/* DELETE BUTTON */}
+          <button
+            onClick={deleteQuiz}
+            className="bg-red-500 text-white px-4 py-2 rounded"
+          >
+            Delete Quiz
+          </button>
 
-          {quiz.map((q, idx) => (
-            <div key={idx} className="p-4 bg-white shadow rounded">
-              <p className="font-semibold">{idx + 1}. {q.question}</p>
-              <ul className="mt-2 space-y-1">
-                {q.options.map((opt, i) => {
-                  const isSelected = answers[idx] === opt;
-                  const isCorrect = submitted && opt === q.correctAnswer;
-                  const isWrong = submitted && isSelected && opt !== q.correctAnswer;
+          <div className="space-y-4 mt-4">
+            {submitted && (
+              <div className="text-xl font-bold mb-4">
+                Your Score: {score} / {quiz.length}
+              </div>
+            )}
 
-                  let bgColor = "bg-gray-50";
-                  if (isCorrect) bgColor = "bg-green-200 border-green-400";
-                  if (isWrong) bgColor = "bg-red-200 border-red-400";
-                  if (!submitted && isSelected) bgColor = "bg-blue-100 border-blue-400";
+            {quiz.map((q, idx) => (
+              <div key={idx} className="p-4 bg-white shadow rounded">
+                <p className="font-semibold">{idx + 1}. {q.question}</p>
+                <ul className="mt-2 space-y-1">
+                  {q.options.map((opt, i) => {
+                    const isSelected = answers[idx] === opt;
+                    const isCorrect = submitted && opt === q.correctAnswer;
+                    const isWrong = submitted && isSelected && opt !== q.correctAnswer;
 
-                  return (
-                    <li
-                      key={i}
-                      onClick={() => handleSelect(idx, opt)}
-                      className={`p-2 rounded cursor-pointer border ${bgColor}`}
-                    >
-                      {opt}
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          ))}
+                    let bgColor = "bg-gray-50";
+                    if (isCorrect) bgColor = "bg-green-200 border-green-400";
+                    if (isWrong) bgColor = "bg-red-200 border-red-400";
+                    if (!submitted && isSelected) bgColor = "bg-blue-100 border-blue-400";
 
-          {!submitted && (
-            <button
-              onClick={handleSubmit}
-              className="mt-4 bg-blue-500 text-white px-4 py-2 rounded"
-            >
-              Submit Quiz
-            </button>
-          )}
-        </div>
+                    return (
+                      <li
+                        key={i}
+                        onClick={() => handleSelect(idx, opt)}
+                        className={`p-2 rounded cursor-pointer border ${bgColor}`}
+                      >
+                        {opt}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            ))}
+
+            {!submitted && (
+              <button
+                onClick={handleSubmit}
+                className="mt-4 bg-blue-500 text-white px-4 py-2 rounded"
+              >
+                Submit Quiz
+              </button>
+            )}
+          </div>
+        </>
       )}
     </div>
   );

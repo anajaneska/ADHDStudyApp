@@ -1,22 +1,26 @@
 package mk.ukim.finki.backend.service.impl;
 
+import lombok.RequiredArgsConstructor;
 import mk.ukim.finki.backend.model.PomodoroSession;
+import mk.ukim.finki.backend.model.PomodoroSettings;
+import mk.ukim.finki.backend.model.User;
 import mk.ukim.finki.backend.model.exeptions.PomodoroSessionDoesNotExistException;
 import mk.ukim.finki.backend.repository.PomodoroRepository;
+import mk.ukim.finki.backend.repository.PomodoroSettingsRepository;
+import mk.ukim.finki.backend.repository.UserRepository;
 import mk.ukim.finki.backend.service.PomodoroService;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class PomodoroServiceImpl implements PomodoroService {
     private final PomodoroRepository pomodoroRepository;
+    private final PomodoroSettingsRepository pomodoroSettingsRepository;
+    private final UserRepository userRepository;
 
-    public PomodoroServiceImpl(PomodoroRepository pomodoroRepository) {
-        this.pomodoroRepository = pomodoroRepository;
-    }
 
     @Override
     public List<PomodoroSession> getAllSessionsForUser(Long userId) {
@@ -36,18 +40,6 @@ public class PomodoroServiceImpl implements PomodoroService {
     }
 
     @Override
-    public Optional<PomodoroSession> getSessionById(Long id) {
-        return pomodoroRepository.findById(id);
-    }
-
-    @Override
-    public void deleteSession(Long id) {
-        PomodoroSession session = pomodoroRepository.findById(id)
-                .orElseThrow(() -> new PomodoroSessionDoesNotExistException(id));
-        pomodoroRepository.delete(session);
-    }
-
-    @Override
     public PomodoroSession markAsCompleted(Long id) {
         PomodoroSession session = pomodoroRepository.findById(id)
                 .orElseThrow(() -> new PomodoroSessionDoesNotExistException(id));
@@ -56,4 +48,27 @@ public class PomodoroServiceImpl implements PomodoroService {
         session.setEndTime(LocalDateTime.now());
         return pomodoroRepository.save(session);
     }
+    public PomodoroSettings getSettings(Long userId) {
+        return pomodoroSettingsRepository.findByUserId(userId).orElseGet(() -> createDefaultSettings(userId));
+    }
+
+    private PomodoroSettings createDefaultSettings(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        PomodoroSettings settings = new PomodoroSettings();
+        settings.setUser(user);
+        settings.setFocusDuration(25);
+        settings.setBreakDuration(5);
+
+        return pomodoroSettingsRepository.save(settings);
+    }
+
+    public PomodoroSettings updateSettings(Long userId, int focus, int brk) {
+        PomodoroSettings settings = getSettings(userId);
+        settings.setFocusDuration(focus);
+        settings.setBreakDuration(brk);
+        return pomodoroSettingsRepository.save(settings);
+    }
+
 }

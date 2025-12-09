@@ -30,21 +30,25 @@ export default function FocusPage() {
     <div className="flex flex-row justify-center items-start gap-12 max-w-[1400px] w-full">
 
       {/* Pomodoro */}
-      <div className="flex justify-center" style={{ width: "420px" }}>
-        <PomodoroTimer
-          tasks={tasks}
-          selectedTask={selectedTask}
-          setSelectedTask={setSelectedTask}
-        />
-      </div>
+<div className="flex-1 max-w-[520px] min-h-[650px]">
+  <div className="h-full">
+    <PomodoroTimer
+      tasks={tasks}
+      selectedTask={selectedTask}
+      setSelectedTask={setSelectedTask}
+    />
+  </div>
+</div>
 
-      {/* To-Do List */}
-      <div className="flex-1 max-w-[520px]">
-        <ToDoList
-          fetchTasks={fetchTasks}
-          focusedTaskId={selectedTask?.id}
-        />
-      </div>
+{/* To-Do */}
+<div className="flex-1 max-w-[520px] min-h-[650px]">
+  <div className="h-full">
+    <ToDoList
+      fetchTasks={fetchTasks}
+      focusedTaskId={selectedTask?.id}
+    />
+  </div>
+</div>
 
     </div>
   </div>

@@ -6,6 +6,7 @@ import mk.ukim.finki.backend.model.Document;
 import mk.ukim.finki.backend.model.Question;
 import mk.ukim.finki.backend.model.Quiz;
 import mk.ukim.finki.backend.repository.DocumentRepository;
+import mk.ukim.finki.backend.repository.QuestionRepository;
 import mk.ukim.finki.backend.repository.QuizRepository;
 import mk.ukim.finki.backend.service.AiService;
 import mk.ukim.finki.backend.service.QuizService;
@@ -24,6 +25,7 @@ public class QuizServiceImpl implements QuizService {
     private final DocumentRepository documentRepository;
     private final QuizRepository quizRepository;
     private final AiService aiService;
+    private final QuestionRepository questionRepository;
 
     @Override
     public Quiz generateAndSaveQuiz(Long fileId, Long userId) throws IOException {
@@ -61,7 +63,14 @@ public class QuizServiceImpl implements QuizService {
     }
 
     @Override
+    @Transactional
     public void deleteQuiz(Long fileId) {
+        Quiz quiz = quizRepository.findByDocumentId(fileId)
+                .orElseThrow(() -> new RuntimeException("Quiz not found"));
+
+        Long quizId = quiz.getId();
+
+        questionRepository.deleteByQuizId(quizId);
         quizRepository.deleteByDocumentId(fileId);
     }
 }

@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from "react";
-import { jwtDecode } from "jwt-decode";
 import PomodoroDisplay from "./pomodorodisplay";
 import PomodoroControls from "./pomodorocontrols";
 import PomodoroSettings from "./pomodorosettings";
 import TaskModal from "./taskmodal";
 import { FaCog } from "react-icons/fa";
 import "./pomodoro.css";
+import instance from "../../custom-axios/axios";
 
 export default function PomodoroTimer({ tasks, selectedTask, setSelectedTask }) {
-  const [username, setUsername] = useState(null);
-  const [timeLeft, setTimeLeft] = useState(25 * 60);
+  const token = localStorage.getItem("jwt");
+  const userId = localStorage.getItem("userId");
+
+  const [timeLeft, setTimeLeft] = useState(null);
   const [isRunning, setIsRunning] = useState(false);
   const [cycle, setCycle] = useState("work");
   const [workDuration, setWorkDuration] = useState(25);
@@ -17,44 +19,74 @@ export default function PomodoroTimer({ tasks, selectedTask, setSelectedTask }) 
   const [editMode, setEditMode] = useState(false);
   const [showTaskModal, setShowTaskModal] = useState(false);
 
-  // Decode JWT
+  const [loadingSettings, setLoadingSettings] = useState(true);
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
+
+  const storageKey = `pomodoro_${userId}`;
+
+  /** ------------------------------
+   * Load Pomodoro settings from backend (once per session)
+   * ------------------------------ */
   useEffect(() => {
-    const token = localStorage.getItem("jwt");
-    if (token) {
+    if (!userId || settingsLoaded) return;
+
+    const loadSettings = async () => {
+      setLoadingSettings(true);
       try {
-        const decoded = jwtDecode(token);
-        setUsername(decoded.sub || decoded.username || "guest");
+        const res = await instance.get(`/pomodoro/settings/${userId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        setWorkDuration(res.data.focusDuration);
+        setBreakDuration(res.data.breakDuration);
+        setTimeLeft(res.data.focusDuration * 60);
+        setSettingsLoaded(true);
       } catch (err) {
-        console.error("Invalid token:", err);
+        console.error("Failed to load pomodoro settings:", err);
+      } finally {
+        setLoadingSettings(false);
       }
-    }
-  }, []);
+    };
 
-  const storageKey = `pomodoro_${username}`;
+    loadSettings();
+  }, [userId, token, settingsLoaded]);
 
-  // Load saved session
+  /** ------------------------------
+   * Load saved localStorage state
+   * ------------------------------ */
   useEffect(() => {
-    if (!username) return;
+    if (!userId) return;
+
     const saved = localStorage.getItem(storageKey);
-    if (saved) {
-      const { timeLeft, isRunning, cycle, lastUpdate, date } = JSON.parse(saved);
-      const today = new Date().toDateString();
-      if (date !== today) {
-        localStorage.removeItem(storageKey);
-        return;
-      }
-      const now = Date.now();
-      const elapsed = Math.floor((now - lastUpdate) / 1000);
-      const newTime = isRunning ? Math.max(timeLeft - elapsed, 0) : timeLeft;
-      setTimeLeft(newTime);
-      setIsRunning(isRunning);
-      setCycle(cycle);
+    if (!saved) {
+      setTimeLeft(workDuration * 60);
+      return;
     }
-  }, [username]);
 
-  // Save to localStorage
+    const { timeLeft: savedTime, isRunning: savedRunning, cycle: savedCycle, lastUpdate, date } = JSON.parse(saved);
+    const today = new Date().toDateString();
+
+    if (date !== today) {
+      localStorage.removeItem(storageKey);
+      setTimeLeft(workDuration * 60);
+      return;
+    }
+
+    const now = Date.now();
+    const elapsed = Math.floor((now - lastUpdate) / 1000);
+    const newTime = savedRunning ? Math.max(savedTime - elapsed, 0) : savedTime;
+
+    setTimeLeft(newTime);
+    setIsRunning(savedRunning);
+    setCycle(savedCycle);
+  }, [userId, workDuration]);
+
+  /** ------------------------------
+   * Save state to localStorage
+   * ------------------------------ */
   useEffect(() => {
-    if (!username) return;
+    if (!userId) return;
+
     localStorage.setItem(
       storageKey,
       JSON.stringify({
@@ -65,32 +97,42 @@ export default function PomodoroTimer({ tasks, selectedTask, setSelectedTask }) 
         date: new Date().toDateString(),
       })
     );
-  }, [timeLeft, isRunning, cycle, username]);
+  }, [timeLeft, isRunning, cycle, userId]);
 
-  // Timer logic
+  /** ------------------------------
+   * Timer logic
+   * ------------------------------ */
   useEffect(() => {
-    let timer;
-    if (isRunning && timeLeft > 0) {
-      timer = setInterval(() => setTimeLeft((prev) => prev - 1), 1000);
-    } else if (timeLeft === 0) {
-      if (cycle === "work") {
-        alert("Време е за пауза ☕");
-        setCycle("break");
-        setTimeLeft(breakDuration * 60);
-        setSelectedTask(null);
-      } else {
-        alert("Време е за работа 💪");
-        setCycle("work");
-        setTimeLeft(workDuration * 60);
-      }
-    }
-    return () => clearInterval(timer);
-  }, [isRunning, timeLeft, cycle]);
+    if (timeLeft === null || !isRunning) return;
 
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          if (cycle === "work") {
+            alert("Time for a break ☕");
+            setCycle("break");
+            setTimeLeft(breakDuration * 60);
+            setSelectedTask(null);
+          } else {
+            alert("Time for work 💪");
+            setCycle("work");
+            setTimeLeft(workDuration * 60);
+          }
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [isRunning, timeLeft, cycle, workDuration, breakDuration, setSelectedTask]);
+
+  /** ------------------------------ */
   const resetTimer = () => {
     setIsRunning(false);
-    setTimeLeft(workDuration * 60);
     setCycle("work");
+    setTimeLeft(workDuration * 60);
     setSelectedTask(null);
     localStorage.removeItem(storageKey);
   };
@@ -101,68 +143,66 @@ export default function PomodoroTimer({ tasks, selectedTask, setSelectedTask }) 
     setIsRunning(false);
   };
 
+  if (loadingSettings) return <div className="loading">Loading settings...</div>;
+
   return (
     <div className="pomodoro-container">
-  {/* Top header: title left, gear right */}
-  <div className="pomodoro-header">
-    <h2 className="pomodoro-title">Pomodoro timer</h2>
-    <div className="settings-gear" onClick={() => setEditMode(true)}>
-      <FaCog size={24} />
+      <div className="pomodoro-header">
+        <h2 className="pomodoro-title">Pomodoro timer</h2>
+        <div className="settings-gear" onClick={() => setEditMode(true)}>
+          <FaCog size={24} />
+        </div>
+      </div>
+
+      <div className="cycle-switch-top">
+        <button
+          className={`btn ${cycle === "work" ? "btn-active" : ""}`}
+          onClick={() => switchCycle("work")}
+        >
+          Focus ({workDuration})
+        </button>
+        <button
+          className={`btn ${cycle === "break" ? "btn-active" : ""}`}
+          onClick={() => switchCycle("break")}
+        >
+          Break ({breakDuration})
+        </button>
+      </div>
+
+      <PomodoroDisplay cycle={cycle} timeLeft={timeLeft} selectedTask={selectedTask} />
+
+      <PomodoroControls
+        isRunning={isRunning}
+        setIsRunning={setIsRunning}
+        resetTimer={resetTimer}
+        cycle={cycle}
+        selectedTask={selectedTask}
+        setShowTaskModal={setShowTaskModal}
+      />
+
+      <PomodoroSettings
+        editMode={editMode}
+        setEditMode={setEditMode}
+        workDuration={workDuration}
+        breakDuration={breakDuration}
+        setWorkDuration={setWorkDuration}
+        setBreakDuration={setBreakDuration}
+        switchCycle={switchCycle}
+        cycle={cycle}
+      />
+
+      {showTaskModal && cycle === "work" && (
+        <TaskModal
+          tasks={tasks}
+          setShowTaskModal={setShowTaskModal}
+          setSelectedTask={(task) => {
+            setSelectedTask(task);
+            setShowTaskModal(false);
+            setIsRunning(true);
+          }}
+          setIsRunning={setIsRunning}
+        />
+      )}
     </div>
-  </div>
-
-  {/* Top: Focus / Break buttons */}
-  <div className="cycle-switch-top">
-    <button
-      className={`btn ${cycle === "work" ? "btn-active" : ""}`}
-      onClick={() => switchCycle("work")}
-    >
-      Focus ({workDuration})
-    </button>
-    <button
-      className={`btn ${cycle === "break" ? "btn-active" : ""}`}
-      onClick={() => switchCycle("break")}
-    >
-      Break ({breakDuration})
-    </button>
-  </div>
-
-  {/* Timer Display */}
-  <PomodoroDisplay
-    cycle={cycle}
-    timeLeft={timeLeft}
-    selectedTask={selectedTask}
-  />
-
-  {/* Bottom: Start / Reset buttons */}
-  <PomodoroControls
-    isRunning={isRunning}
-    setIsRunning={setIsRunning}
-    resetTimer={resetTimer}
-    cycle={cycle}
-    setShowTaskModal={setShowTaskModal}
-  />
-
-  {/* Settings modal */}
-  <PomodoroSettings
-    editMode={editMode}
-    setEditMode={setEditMode}
-    workDuration={workDuration}
-    breakDuration={breakDuration}
-    setWorkDuration={setWorkDuration}
-    setBreakDuration={setBreakDuration}
-    switchCycle={switchCycle}
-    cycle={cycle}
-  />
-
-  {showTaskModal && (
-    <TaskModal
-      tasks={tasks}
-      setShowTaskModal={setShowTaskModal}
-      setSelectedTask={setSelectedTask}
-      setIsRunning={setIsRunning}
-    />
-  )}
-</div>
   );
 }

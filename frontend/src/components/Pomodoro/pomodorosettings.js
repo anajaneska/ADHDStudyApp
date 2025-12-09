@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import instance from "../../custom-axios/axios";
 
 export default function PomodoroSettings({
   editMode,
@@ -12,13 +13,41 @@ export default function PomodoroSettings({
 }) {
   const [tempWork, setTempWork] = useState(workDuration);
   const [tempBreak, setTempBreak] = useState(breakDuration);
+  const userId = localStorage.getItem("userId");
+  const token = localStorage.getItem("jwt");
 
-  const saveSettings = () => {
-    if (tempWork > 0) setWorkDuration(tempWork);
-    if (tempBreak > 0) setBreakDuration(tempBreak);
-    switchCycle(cycle);
+  // Reset modal inputs whenever it opens
+  useEffect(() => {
+    if (editMode) {
+      setTempWork(workDuration);
+      setTempBreak(breakDuration);
+    }
+  }, [editMode, workDuration, breakDuration]);
+
+  const saveSettings = async () => {
+  if (!userId) return;
+
+  try {
+    const response = await instance.put(
+      `/pomodoro/settings/${userId}`,
+      { focusDuration: tempWork, breakDuration: tempBreak },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    // Update parent state
+    setWorkDuration(response.data.focusDuration);
+    setBreakDuration(response.data.breakDuration);
+
+    switchCycle(cycle); // reset timer
     setEditMode(false);
-  };
+
+    // Reload the page to fetch updated data from backend
+    window.location.reload();
+  } catch (err) {
+    console.error("Error saving settings", err);
+  }
+};
+
 
   if (!editMode) return null;
 
@@ -32,7 +61,7 @@ export default function PomodoroSettings({
             type="number"
             min="1"
             value={tempWork}
-            onChange={(e) => setTempWork(parseInt(e.target.value))}
+            onChange={(e) => setTempWork(parseInt(e.target.value) || 1)}
           />
         </label>
         <label>
@@ -41,17 +70,13 @@ export default function PomodoroSettings({
             type="number"
             min="1"
             value={tempBreak}
-            onChange={(e) => setTempBreak(parseInt(e.target.value))}
+            onChange={(e) => setTempBreak(parseInt(e.target.value) || 1)}
           />
         </label>
       </div>
       <div className="settings-buttons">
-        <button onClick={saveSettings} className="btn btn-save">
-          Save
-        </button>
-        <button onClick={() => setEditMode(false)} className="btn btn-cancel">
-          Cancel
-        </button>
+        <button onClick={saveSettings} className="btn btn-save">Save</button>
+        <button onClick={() => setEditMode(false)} className="btn btn-cancel">Cancel</button>
       </div>
     </div>
   );

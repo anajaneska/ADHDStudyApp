@@ -12,5 +12,5 @@ public class TaskCreateRequest {
     private LocalDateTime start;
     private LocalDateTime end;
     private LocalDateTime dueDate;
-    private List<Long> tagIds; // <-- IDs of tags to attach
+    private List<Long> tagIds;
 }

@@ -13,7 +13,11 @@ export default function Header() {
         <div className="header-inner">
 
           <div className="left-section">
-            <div className="app-name">Focus Nest</div>
+            <div className="app-name">
+              <NavLink to="/">
+                Focus Nest
+              </NavLink>
+            </div>
 
             <nav className="nav-links">
 

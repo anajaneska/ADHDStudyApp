@@ -14,11 +14,8 @@ import java.util.Optional;
 
 public interface TaskService {
     List<Task> getAllTasksForUser(Long userId);
-
     Task saveTask(Task task);
-
     Optional<Task> getTaskById(Long id);
-
     void deleteTask(Long id);
     Task updateTask(Long id, TaskUpdateRequest request);
     Task toggleTaskCompletion(Long id);
@@ -26,6 +23,4 @@ public interface TaskService {
     Task breakdownTask(Long taskId);
     Subtask breakDownSubtask(Long subtaskId);
     Task estimateTaskTime(Long taskId);
-    //List<Task> getTasksByTag(Long userId, Long tagId);
-
 }
