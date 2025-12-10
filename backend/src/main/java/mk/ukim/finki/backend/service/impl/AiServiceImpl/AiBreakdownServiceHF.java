@@ -15,34 +15,62 @@ import java.util.Map;
 public class AiBreakdownServiceHF {
 
     private final ChatModelServiceHF chatModelServiceHF;
+    private final ObjectMapper mapper = new ObjectMapper();
 
     /**
-     * Generates a list of subtasks for a given task.
+     * Generates a list of subtasks for a given task using AI.
      */
     public List<Subtask> generateSubtasks(String title, String description) {
         try {
-            String prompt = "Break down the following task into smaller subtasks. " +
-                    "Return a JSON array with objects having 'title' and 'description'.\n" +
-                    "Task: " + title + "\nDetails: " + (description != null ? description : "");
+
+            // More strict prompt to force real JSON
+            String prompt = """
+                    Break down the following task into smaller subtasks.
+                    Return ONLY a JSON array. No explanations, no markdown.
+                    
+                    Each element:
+                    {
+                      "title": "string",
+                      "description": "string"
+                    }
+                    
+                    Task: "%s"
+                    Details: "%s"
+                    """.formatted(
+                    title,
+                    description != null ? description : ""
+            );
 
             String aiResponse = chatModelServiceHF.callChat(prompt);
 
-            ObjectMapper mapper = new ObjectMapper();
-            List<Map<String, String>> items = mapper.readValue(aiResponse,
-                    new TypeReference<List<Map<String, String>>>() {});
+            // Clean up possible markdown wrapper
+            aiResponse = aiResponse.trim()
+                    .replace("```json", "")
+                    .replace("```", "")
+                    .trim();
+
+            // Parse JSON
+            List<Map<String, String>> items = mapper.readValue(
+                    aiResponse,
+                    new TypeReference<>() {}
+            );
 
             List<Subtask> subtasks = new ArrayList<>();
+
             for (Map<String, String> item : items) {
                 Subtask st = new Subtask();
-                st.setTitle(item.get("title"));
+                st.setTitle(item.getOrDefault("title", "Untitled"));
+                st.setDescription(item.getOrDefault("description", ""));
                 st.setCompleted(false);
-                st.setDescription(item.get("description")); // optional, you may need to add a field
+
+
                 subtasks.add(st);
             }
+
             return subtasks;
 
         } catch (Exception e) {
-            throw new RuntimeException("Failed to generate subtasks via AI", e);
+            throw new RuntimeException("Failed to generate subtasks via AI. Raw response: \n" + e.getMessage());
         }
     }
 }

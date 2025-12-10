@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import instance from "../../custom-axios/axios";
 
-export default function TagPicker({ selectedTagIds, onTagChange }) {
+export default function TagPicker({ selectedTagIds, onTagChange, tags: parentTags }) {
   const [tags, setTags] = useState([]);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newTagName, setNewTagName] = useState("");
@@ -9,7 +9,7 @@ export default function TagPicker({ selectedTagIds, onTagChange }) {
 
   const userId = localStorage.getItem("userId");
 
-  // Load all tags for the user
+  // Load all tags for the user (only once)
   const fetchTags = async () => {
     try {
       const res = await instance.get(`/tags/${userId}`);
@@ -24,7 +24,11 @@ export default function TagPicker({ selectedTagIds, onTagChange }) {
     if (userId) fetchTags();
   }, [userId]);
 
-  // Select or unselect tag
+  // Sync with parent updates
+  useEffect(() => {
+    if (parentTags) setTags(parentTags);
+  }, [parentTags]);
+
   const toggleTag = (tagId) => {
     const updated = selectedTagIds.includes(tagId)
       ? selectedTagIds.filter((id) => id !== tagId)
@@ -33,7 +37,6 @@ export default function TagPicker({ selectedTagIds, onTagChange }) {
     onTagChange(updated);
   };
 
-  // Create a new tag
   const createTag = async () => {
     if (!newTagName.trim()) return;
 
@@ -44,14 +47,9 @@ export default function TagPicker({ selectedTagIds, onTagChange }) {
       });
 
       const newTag = res.data;
-
-      // Add to list
       setTags((prev) => [...prev, newTag]);
-
-      // Auto-select the new tag
       onTagChange([...selectedTagIds, newTag.id]);
 
-      // Reset
       setShowCreateForm(false);
       setNewTagName("");
       setNewTagColor("#4ade80");
@@ -61,7 +59,7 @@ export default function TagPicker({ selectedTagIds, onTagChange }) {
   };
 
   return (
-    <div className="flex flex-col gap-2 mt-2">
+    <div className="flex flex-col gap-2">
 
       {/* SELECTED TAGS */}
       <div className="flex flex-wrap gap-2">
@@ -74,9 +72,10 @@ export default function TagPicker({ selectedTagIds, onTagChange }) {
               key={tag.id}
               style={{
                 backgroundColor: tag.color,
-                padding: "2px 6px",
-                borderRadius: "4px",
-                color: "#fff"
+                padding: "4px 8px",
+                borderRadius: "6px",
+                color: "#fff",
+                fontSize: "0.85rem",
               }}
               onClick={() => toggleTag(tag.id)}
               className="cursor-pointer"
@@ -90,6 +89,7 @@ export default function TagPicker({ selectedTagIds, onTagChange }) {
       {/* DROPDOWN */}
       <select
         defaultValue=""
+        className="p-2 rounded border bg-white"
         onChange={(e) => {
           const value = e.target.value;
 
@@ -130,7 +130,7 @@ export default function TagPicker({ selectedTagIds, onTagChange }) {
             type="color"
             value={newTagColor}
             onChange={(e) => setNewTagColor(e.target.value)}
-            className="w-12 h-8"
+            className="w-10 h-8 cursor-pointer"
           />
 
           <button

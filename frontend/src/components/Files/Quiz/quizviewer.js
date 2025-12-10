@@ -101,13 +101,7 @@ export default function QuizViewer({ file }) {
 
       {quiz.length > 0 && (
         <>
-          {/* DELETE BUTTON */}
-          <button
-            onClick={deleteQuiz}
-            className="bg-red-500 text-white px-4 py-2 rounded"
-          >
-            Delete Quiz
-          </button>
+
 
           <div className="space-y-4 mt-4">
             {submitted && (
@@ -152,6 +146,13 @@ export default function QuizViewer({ file }) {
                 Submit Quiz
               </button>
             )}
+                     {/* DELETE BUTTON */}
+          <button
+            onClick={deleteQuiz}
+            className="bg-red-500 text-white px-4 py-2 rounded"
+          >
+            Delete Quiz
+          </button>
           </div>
         </>
       )}

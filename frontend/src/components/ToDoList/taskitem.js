@@ -182,14 +182,21 @@ const handleSave = () => {
           </div>
 
           {/* SUBTASK TOGGLE */}
-          {task.subtasks?.length > 0 && (
-            <button
-              className="sutasks-toggle-btn mt-1"
-              onClick={() => setShowSubtasks(!showSubtasks)}
-            >
-              {showSubtasks ? "Hide subtasks" : "Show subtasks V"}
-            </button>
-          )}
+{task.subtasks?.length > 0 && (
+  <button
+    className="subtasks-toggle-btn mt-1 flex items-center gap-1 text-sm"
+    onClick={() => setShowSubtasks(!showSubtasks)}
+  >
+    {showSubtasks ? "Hide subtasks" : "Show subtasks"}
+    <span
+      className={`inline-block transition-transform duration-200 ${
+        showSubtasks ? "rotate-180" : ""
+      }`}
+    >
+      ▼
+    </span>
+  </button>
+)}
         </div>
       )}
 

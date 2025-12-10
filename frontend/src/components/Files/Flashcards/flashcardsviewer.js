@@ -4,7 +4,8 @@ import instance from "../../../custom-axios/axios";
 export default function FlashcardsViewer({ file }) {
   const [flashcards, setFlashcards] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [flipped, setFlipped] = useState({});
+  const [flipped, setFlipped] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
   const userId = localStorage.getItem("userId");
 
   const fetchFlashcards = async () => {
@@ -14,8 +15,7 @@ export default function FlashcardsViewer({ file }) {
       let data = [];
       try {
         data = res.data.flashcardData ? JSON.parse(res.data.flashcardData) : [];
-      } catch (parseError) {
-        console.warn("Failed to parse flashcardData, showing raw string", parseError);
+      } catch {
         data = [{ question: res.data.flashcardData, answer: "" }];
       }
       setFlashcards(data);
@@ -24,7 +24,8 @@ export default function FlashcardsViewer({ file }) {
       setFlashcards([]);
     } finally {
       setLoading(false);
-      setFlipped({});
+      setFlipped(false);
+      setCurrentIndex(0);
     }
   };
 
@@ -47,6 +48,8 @@ export default function FlashcardsViewer({ file }) {
       console.error("Error generating flashcards:", err);
     } finally {
       setLoading(false);
+      setCurrentIndex(0);
+      setFlipped(false);
     }
   };
 
@@ -57,6 +60,8 @@ export default function FlashcardsViewer({ file }) {
     try {
       await instance.delete(`/files/${file.id}/flashcards`);
       setFlashcards([]);
+      setCurrentIndex(0);
+      setFlipped(false);
     } catch (err) {
       console.error("Error deleting flashcards:", err);
     } finally {
@@ -64,14 +69,22 @@ export default function FlashcardsViewer({ file }) {
     }
   };
 
-  const toggleFlip = (idx) => {
-    setFlipped((prev) => ({ ...prev, [idx]: !prev[idx] }));
+  const nextCard = () => {
+    setCurrentIndex((prev) => (prev + 1) % flashcards.length);
+    setFlipped(false);
   };
+
+  const prevCard = () => {
+    setCurrentIndex((prev) => (prev - 1 + flashcards.length) % flashcards.length);
+    setFlipped(false);
+  };
+
+  const toggleFlip = () => setFlipped(!flipped);
 
   if (loading) return <p className="text-gray-500">Loading...</p>;
 
   return (
-    <div>
+    <div className="flex flex-col items-center">
       {!flashcards.length && (
         <button
           onClick={generateFlashcards}
@@ -83,33 +96,49 @@ export default function FlashcardsViewer({ file }) {
 
       {flashcards.length > 0 && (
         <>
-          <button
-            onClick={deleteFlashcards}
-            className="bg-red-500 text-white px-4 py-2 rounded mb-4"
+
+          <div
+            onClick={toggleFlip}
+            className="w-80 h-48 bg-white border rounded shadow cursor-pointer select-none flex items-center justify-center text-center p-4 transition-transform duration-300 transform hover:scale-105"
           >
+            {flipped ? (
+              <div>
+                <strong>A:</strong> <br /> {flashcards[currentIndex].answer}
+              </div>
+            ) : (
+              <div>
+                <strong>Q:</strong> <br /> {flashcards[currentIndex].question}
+              </div>
+            )}
+          </div>
+
+          <div className="flex gap-4 mt-4">
+            <button
+              onClick={prevCard}
+              className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400"
+            >
+              Previous
+            </button>
+            <button
+              onClick={nextCard}
+              className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400"
+            >
+              Next
+            </button>
+          </div>
+
+          <p className="mt-2 text-sm text-gray-600">
+            {currentIndex + 1} / {flashcards.length}
+          </p>
+            <br/>
+               <button
+            onClick={deleteFlashcards}
+            className="bg-red-500 text-white px-4 py-2 rounded mb-4">
             Delete Flashcards
           </button>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {flashcards.map((card, idx) => (
-              <div
-                key={idx}
-                onClick={() => toggleFlip(idx)}
-                className="p-6 bg-white border rounded shadow cursor-pointer select-none transition-transform duration-300 transform hover:scale-105 flex items-center justify-center text-center"
-              >
-                {flipped[idx] ? (
-                  <div>
-                    <strong>A:</strong> <br /> {card.answer}
-                  </div>
-                ) : (
-                  <div>
-                    <strong>Q:</strong> <br /> {card.question}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
+         
         </>
+        
       )}
     </div>
   );

@@ -189,29 +189,45 @@ if (filterDate) {
         </div>
       )}
 
-      <div className="filters flex gap-4 mb-4">
-  {/* Tag Filter */}
-  <TagPicker
-    selectedTagIds={filterTagIds}
-    onTagChange={setFilterTagIds}
-    tags={tags}
-  />
+<div className="filters-wrapper">
 
-  {/* Date Filter */}
-  <label>
-    Start Date:
-    <input
-      type="date"
-      value={filterDate}
-      onChange={(e) => setFilterDate(e.target.value)}
-    />
-  </label>
+  <div className="filters-bar">
+    {/* Tag Filter */}
+    <div className="filter-group full-width">
+      <label className="filter-label">Tags</label>
+      <TagPicker
+        selectedTagIds={filterTagIds}
+        onTagChange={setFilterTagIds}
+        tags={tags}
+      />
+    </div>
 
-  {/* Reset Filters */}
-  <button onClick={() => { setFilterTagIds([]); setFilterDate(""); }}>
-    Reset Filters
-  </button>
+    {/* Date Filter */}
+    <div className="filter-group">
+      <label className="filter-label">Start Date</label>
+      <input
+        type="date"
+        className="filter-input"
+        value={filterDate}
+        onChange={(e) => setFilterDate(e.target.value)}
+      />
+    </div>
+
+    {/* Reset */}
+    <button
+      className="reset-btn"
+      onClick={() => {
+        setFilterTagIds([]);
+        setFilterDate("");
+      }}
+    >
+      Reset
+    </button>
+  </div>
 </div>
+
+
+
 
 
       {showAddModal && (

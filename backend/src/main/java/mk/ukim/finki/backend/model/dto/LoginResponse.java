@@ -11,4 +11,8 @@ public class LoginResponse {
         this.username = username;
     }
     public Long getUserId() { return userId; }
+    public String getToken() {return token;}
+    public String getUsername() {return username;}
+
+
 }

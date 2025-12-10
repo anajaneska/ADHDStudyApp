@@ -97,12 +97,4 @@ public class TaskController {
         return taskService.breakdownTask(id);
     }
 
-    @PostMapping("/subtasks/{id}/breakdown")
-    public Subtask breakDownSubtask(@PathVariable Long id) {
-        return taskService.breakDownSubtask(id);
-    }
-    @PostMapping("/subtasks/{id}/estimate")
-    public Subtask estimateSubtask(@PathVariable Long id) {
-        return taskService.estimateSubtaskTime(id);
-    }
 }

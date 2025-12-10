@@ -30,14 +30,4 @@ public class Subtask {
     @JsonBackReference("task-subtasks")
     private Task task;
 
-    // Parent subtask
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parent_subtask_id")
-    @JsonBackReference("subtask-children")   // <-- FIX: MATCHES children
-    private Subtask parent;
-
-    // Children subtasks
-    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
-    @JsonManagedReference("subtask-children")
-    private List<Subtask> children = new ArrayList<>();
 }

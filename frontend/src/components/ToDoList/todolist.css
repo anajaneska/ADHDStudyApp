@@ -217,3 +217,89 @@
   gap: 8px;
 }
 
+
+/* Filters */
+/* Wrapper to place title above filters */
+.filters-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+/* Title above filter bar */
+.filters-title {
+  font-size: 1.1rem;
+  color: rgba(139, 127, 199, 1);
+  margin: 0;
+  font-weight: 700;
+}
+
+/* Filter bar container */
+.filters-bar {
+  display: flex;
+  align-items: flex-end;
+  gap: 20px;
+
+  background: rgba(255, 255, 255, 0.7);
+  padding: 16px 20px;
+  border-radius: 16px;
+
+  border: 1px solid #d9e4ff;
+  box-shadow: 0 4px 10px rgba(100, 150, 250, 0.15);
+}
+
+/* Full width row for TagPicker */
+.full-width {
+  flex: 2;
+}
+
+/* Generic filter group */
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Labels */
+.filter-label {
+  font-weight: 600;
+  color: #475569;
+  font-size: 0.9rem;
+}
+
+/* Inputs styled like tasks */
+.filter-input {
+  padding: 8px 10px;
+  background: #ffffff;
+  border-radius: 10px;
+  border: 1px solid #bfd3f8;
+  outline: none;
+  transition: 0.2s;
+}
+
+.filter-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 4px #3b82f6;
+}
+
+/* Reset button */
+.reset-btn {
+  margin-left: auto;
+  padding: 8px 14px;
+
+  background: rgba(139, 127, 199, 1);
+  color: white;
+  border: none;
+  border-radius: 10px;
+
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.2s ease-in-out;
+}
+
+.reset-btn:hover {
+  background: rgba(120, 110, 180, 1);
+}
+
+

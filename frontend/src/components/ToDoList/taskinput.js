@@ -2,63 +2,93 @@ import React from "react";
 import TagPicker from "./tagpicker";
 
 export default function TaskInput({ newTask, setNewTask, addTask, tags, userId }) {
-
   const handleTagChange = (tagIds) => {
     setNewTask({ ...newTask, tagIds });
   };
 
   return (
-    <div className="task-input">
-      <input
-        type="text"
-        placeholder="Title"
-        value={newTask.title}
-        onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
-      />
+    <div className="w-full flex flex-col gap-4 p-4 bg-white shadow rounded-lg">
 
-      <textarea
-        placeholder="Description"
-        value={newTask.description}
-        onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
-      />
+      {/* TITLE */}
+      <div className="flex flex-col">
+        <label className="font-semibold mb-1">Title</label>
+        <input
+          type="text"
+          placeholder="Task title"
+          value={newTask.title}
+          onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+          className="border rounded p-2 focus:ring focus:ring-blue-200"
+        />
+      </div>
 
-      <div className="task-dates">
-        <label>
-          Start:
+      {/* DESCRIPTION */}
+      <div className="flex flex-col">
+        <label className="font-semibold mb-1">Description</label>
+        <textarea
+          placeholder="Task description"
+          value={newTask.description}
+          onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+          className="border rounded p-2 h-24 resize-none focus:ring focus:ring-blue-200"
+        />
+      </div>
+
+      {/* DATES */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        
+        <div className="flex flex-col">
+          <label className="font-semibold mb-1">Start</label>
           <input
             type="datetime-local"
             value={newTask.start}
             onChange={(e) => setNewTask({ ...newTask, start: e.target.value })}
+            className="border rounded p-2 focus:ring focus:ring-blue-200"
           />
-        </label>
-        <label>
-          End:
+        </div>
+
+        <div className="flex flex-col">
+          <label className="font-semibold mb-1">End</label>
           <input
             type="datetime-local"
             value={newTask.end}
             onChange={(e) => setNewTask({ ...newTask, end: e.target.value })}
+            className="border rounded p-2 focus:ring focus:ring-blue-200"
           />
-        </label>
-        <br />
-        <label>
-          Due date:
+        </div>
+
+        <div className="flex flex-col md:col-span-2">
+          <label className="font-semibold mb-1">Due date</label>
           <input
             type="datetime-local"
             value={newTask.dueDate}
             onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
+            className="border rounded p-2 focus:ring focus:ring-blue-200"
           />
-        </label>
+        </div>
       </div>
 
-      {/* Tag Picker */}
-      <TagPicker
-        userId={userId}
-        selectedTagIds={newTask.tagIds}
-        onTagChange={handleTagChange}
-        tags = {tags}
-      />
+      {/* TAG PICKER */}
+      <div className="flex flex-col">
+        <label className="font-semibold mb-1">Tags</label>
+        <TagPicker
+          userId={userId}
+          selectedTagIds={newTask.tagIds}
+          onTagChange={handleTagChange}
+          tags={tags}
+        />
+      </div>
 
-      <button onClick={addTask}>Add Task</button>
+      {/* BUTTON */}
+      <button
+  onClick={addTask}
+  className="mt-2 text-white py-2 rounded transition"
+  style={{
+    backgroundColor: "rgba(139, 127, 199, 1)",
+  }}
+  onMouseOver={(e) => (e.target.style.backgroundColor = "rgba(120, 110, 175, 1)")}
+  onMouseOut={(e) => (e.target.style.backgroundColor = "rgba(139, 127, 199, 1)")}
+>
+  Add Task
+</button>
     </div>
   );
 }

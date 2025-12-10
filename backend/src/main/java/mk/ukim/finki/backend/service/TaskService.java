@@ -19,8 +19,6 @@ public interface TaskService {
     void deleteTask(Long id);
     Task updateTask(Long id, TaskUpdateRequest request);
     Task toggleTaskCompletion(Long id);
-    Subtask estimateSubtaskTime(Long subtaskId);
     Task breakdownTask(Long taskId);
-    Subtask breakDownSubtask(Long subtaskId);
     Task estimateTaskTime(Long taskId);
 }

@@ -30,12 +30,13 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody User user) {
         try {
-            String token = userService.verify(user); // returns JWT
+            System.out.println("Login attempt: " + user.getUsername());
 
-            User loggedInUser = userService.findByUsername(user.getUsername()).orElseThrow(RuntimeException::new);
-            if (loggedInUser == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found");
-            }
+            String token = userService.verify(user); // returns JWT
+            System.out.println("Token generated: " + token);
+
+            User loggedInUser = userService.findByUsername(user.getUsername())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
 
             LoginResponse response = new LoginResponse(
                     token,
@@ -44,7 +45,9 @@ public class UserController {
             );
 
             return ResponseEntity.ok(response);
+
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
         }
     }
