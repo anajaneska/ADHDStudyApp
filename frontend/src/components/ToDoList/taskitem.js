@@ -18,116 +18,121 @@ export default function TaskItem({
   const [isEditing, setIsEditing] = useState(false);
   const [showSubtasks, setShowSubtasks] = useState(false);
 
-const [editData, setEditData] = useState({
-  title: task.title,
-  description: task.description || "",
-  start: task.start
-    ? dayjs(task.start).format("YYYY-MM-DDTHH:mm")
-    : "",
-    end: task.end
-    ? dayjs(task.end).format("YYYY-MM-DDTHH:mm")
-    : "",
-  dueDate: task.dueDate ? dayjs(task.dueDate).format("YYYY-MM-DDTHH:mm") : "",
-  tagIds: task.tags?.map(t => t.id) || []   // <-- use optional chaining + fallback
-});
-
-const handleSave = () => {
-  editTask(task.id, {
-    ...editData,
-    tagIds: editData.tagIds   // make sure we send tagIds to backend
+  const [editData, setEditData] = useState({
+    title: task.title,
+    description: task.description || "",
+    startDate: task.startDate || "",
+    startTime: task.startTime || "",
+    endTime: task.endTime || "",
+    dueDate: task.dueDate || "",
+    recurrenceType: task.recurrenceType || "NONE",
+    recurrenceInterval: task.recurrenceInterval || 1,
+    recurrenceEnd: task.recurrenceEnd || "",
+    tagIds: task.tags?.map(t => t.id) || []
   });
-  setIsEditing(false);
-};
+
+  const handleSave = () => {
+    editTask(task.id, { ...editData, tagIds: editData.tagIds });
+    setIsEditing(false);
+  };
 
   return (
     <li className={`task-item ${task.completed ? "completed" : ""}`}>
-
-      {/* -------------------- EDIT MODE -------------------- */}
       {isEditing ? (
-        <div className="edit-form">
+        <div className="edit-form flex flex-col gap-2 p-2 border rounded">
           <input
             type="text"
             value={editData.title}
-            onChange={(e) =>
-              setEditData({ ...editData, title: e.target.value })
-            }
+            onChange={(e) => setEditData({ ...editData, title: e.target.value })}
+            placeholder="Наслов"
+            className="border p-1 rounded"
           />
           <textarea
             value={editData.description}
-            onChange={(e) =>
-              setEditData({ ...editData, description: e.target.value })
-            }
+            onChange={(e) => setEditData({ ...editData, description: e.target.value })}
+            placeholder="Опис"
+            className="border p-1 rounded"
           />
-
-          <label>Почеток:</label>
-          <input
-            type="datetime-local"
-            value={editData.start}
-            onChange={(e) =>
-              setEditData({ ...editData, start: e.target.value })
-            }
-          />
-
-          <label>Крај:</label>
-          <input
-            type="datetime-local"
-            value={editData.end}
-            onChange={(e) =>
-              setEditData({ ...editData, end: e.target.value })
-            }
-          />
-
-          <label>Рок:</label>
-          <input
-            type="datetime-local"
-            value={editData.dueDate}
-            onChange={(e) =>
-              setEditData({ ...editData, dueDate: e.target.value })
-            }
-          />
-
-          <TagPicker
-              selectedTagIds={editData.tagIds}   // ✅ use tagIds
-              onTagChange={(newTagIds) =>
-                setEditData({ ...editData, tagIds: newTagIds })   // ✅ update tagIds
-              }
-              tags={tags}  // pass all available tags
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <input
+              type="date"
+              value={editData.startDate}
+              onChange={(e) => setEditData({ ...editData, startDate: e.target.value })}
+              className="border p-1 rounded"
             />
-
-          <div className="edit-actions">
-            <button className="save" onClick={handleSave}>Зачувај</button>
-            <button className="cancel" onClick={() => setIsEditing(false)}>Откажи</button>
+            <input
+              type="time"
+              value={editData.startTime}
+              onChange={(e) => setEditData({ ...editData, startTime: e.target.value })}
+              className="border p-1 rounded"
+            />
+            <input
+              type="time"
+              value={editData.endTime}
+              onChange={(e) => setEditData({ ...editData, endTime: e.target.value })}
+              className="border p-1 rounded"
+            />
+            <input
+              type="date"
+              value={editData.dueDate}
+              onChange={(e) => setEditData({ ...editData, dueDate: e.target.value })}
+              className="border p-1 rounded"
+            />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <select
+              value={editData.recurrenceType}
+              onChange={(e) => setEditData({ ...editData, recurrenceType: e.target.value })}
+              className="border p-1 rounded"
+            >
+              <option value="NONE">Нема</option>
+              <option value="DAILY">Дневно</option>
+              <option value="WEEKLY">Неделно</option>
+              <option value="MONTHLY">Месечно</option>
+            </select>
+            <input
+              type="number"
+              min="1"
+              value={editData.recurrenceInterval}
+              onChange={(e) => setEditData({ ...editData, recurrenceInterval: e.target.value })}
+              className="border p-1 rounded"
+            />
+            <input
+              type="date"
+              value={editData.recurrenceEnd}
+              onChange={(e) => setEditData({ ...editData, recurrenceEnd: e.target.value })}
+              className="border p-1 rounded md:col-span-2"
+            />
+          </div>
+          <TagPicker
+            selectedTagIds={editData.tagIds}
+            onTagChange={(newTagIds) => setEditData({ ...editData, tagIds: newTagIds })}
+            tags={tags}
+          />
+          <div className="flex gap-2 mt-2">
+            <button className="px-2 py-1 bg-green-500 text-white rounded" onClick={handleSave}>
+              Зачувај
+            </button>
+            <button className="px-2 py-1 bg-gray-300 rounded" onClick={() => setIsEditing(false)}>
+              Откажи
+            </button>
           </div>
         </div>
       ) : (
-
-
-        /* -------------------- DISPLAY MODE -------------------- */
-        <div className="flex flex-col gap-2">
-
-          {/* === FIRST ROW: checkbox + title + right-side buttons === */}
-          <div className="flex items-start justify-between w-full">
-
-            {/* LEFT: checkbox + title */}
-            <div className="flex items-start gap-3 w-full pr-4">
-
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
               {!focusedTaskId && (
                 <input
                   type="checkbox"
                   checked={task.completed}
                   onChange={() => toggleComplete(task.id)}
-                  className="mt-1"
                 />
               )}
-
-              <h3 className="font-semibold break-words text-lg leading-tight">
-                {task.title}
-              </h3>
+              <h3 className="font-semibold">{task.title}</h3>
             </div>
-
-            {/* RIGHT: action buttons */}
             {!focusedTaskId && (
-              <div className="flex gap-2 shrink-0">
+              <div className="flex gap-1">
                 <button onClick={() => setIsEditing(true)}><BiPencil /></button>
                 <button onClick={() => deleteTask(task.id)}><BiTrash /></button>
                 <button onClick={() => estimateTime(task.id)}><BsClock /></button>
@@ -135,71 +140,47 @@ const handleSave = () => {
               </div>
             )}
           </div>
+          {task.description && <p className="text-gray-700 text-sm">{task.description}</p>}
 
-          {/* DESCRIPTION */}
-          {task.description && (
-            <p className="text-gray-700 text-sm">{task.description}</p>
+          {task.tags?.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-1">
+              {task.tags.map(tag => (
+                <span
+                  key={tag.id}
+                  style={{ backgroundColor: tag.color }}
+                  className="px-2 py-0.5 rounded-full text-white text-xs"
+                >
+                  {tag.name}
+                </span>
+              ))}
+            </div>
           )}
 
-          {/* TAGS DISPLAY */}
-          {/* TAGS DISPLAY */}
-{task.tags?.length > 0 && (
-  <div className="flex flex-wrap gap-2 mt-1">
-    {task.tags.map(tag => (
-      <span
-        key={tag.id}
-        style={{ backgroundColor: tag.color }}
-        className="px-2 py-1 rounded-full text-white text-xs"
-      >
-        {tag.name}
-      </span>
-    ))}
-  </div>
-)}
-
-          {/* ESTIMATE + DATES */}
-          <div className="text-sm text-gray-600 flex flex-wrap gap-4">
+          <div className="text-sm text-gray-600 flex flex-wrap gap-2">
             {task.estimatedMinutes != null && (
-              <span className="flex items-center gap-1">
-                <BsClock /> {task.estimatedMinutes} min
-              </span>
+              <span className="flex items-center gap-1"><BsClock /> {task.estimatedMinutes} min</span>
             )}
-
-            {task.start && (
-              <span>Почеток: {dayjs(task.start).format("DD/MM HH:mm")}</span>
-            )}
-
-            {task.end && (
-              <span>Крај: {dayjs(task.end).format("DD/MM HH:mm")}</span>
-            )}
-
-            {task.dueDate && (
-              <span>Рок: {dayjs(task.dueDate).format("DD/MM HH:mm")}</span>
+            {task.startDate && <span>Почеток: {task.startDate} {task.startTime || ""}</span>}
+            {task.endTime && <span>Крај: {task.endTime}</span>}
+            {task.dueDate && <span>Рок: {task.dueDate}</span>}
+            {task.recurrenceType && task.recurrenceType !== "NONE" && (
+              <span>Повторување: {task.recurrenceType} (секои {task.recurrenceInterval})</span>
             )}
           </div>
 
-          {/* SUBTASK TOGGLE */}
-{task.subtasks?.length > 0 && (
-  <button
-    className="subtasks-toggle-btn mt-1 flex items-center gap-1 text-sm"
-    onClick={() => setShowSubtasks(!showSubtasks)}
-  >
-    {showSubtasks ? "Сокривај подзадачи" : "Прикажи подзадачи"}
-    <span
-      className={`inline-block transition-transform duration-200 ${
-        showSubtasks ? "rotate-180" : ""
-      }`}
-    >
-      ▼
-    </span>
-  </button>
-)}
+          {task.subtasks?.length > 0 && (
+            <button
+              className="subtasks-toggle-btn mt-1 flex items-center gap-1 text-sm"
+              onClick={() => setShowSubtasks(!showSubtasks)}
+            >
+              {showSubtasks ? "Сокривај подзадачи" : "Прикажи подзадачи"} ▼
+            </button>
+          )}
         </div>
       )}
 
-      {/* SUBTASK LIST */}
       {showSubtasks && task.subtasks?.length > 0 && (
-        <div className="subtask-list">
+        <div className="subtask-list pl-4 mt-1">
           {task.subtasks.map((st) => (
             <SubtaskItem
               key={st.id}

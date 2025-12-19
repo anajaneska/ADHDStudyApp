@@ -1,5 +1,5 @@
 import React from "react";
-import ToDoList from "../components/ToDoList/todolist.js";
+import OrganizationToDoList from "../components/ToDoList/todolistorg.js";
 import CalendarView from "../components/Calendar/calendar.js";
 
 export default function OrganizationPage() {
@@ -9,7 +9,7 @@ export default function OrganizationPage() {
       <div className="w-1/2 p-6 overflow-y-auto bg-white shadow-xl border-r border-gray-200">
       <br/>
       <br/>
-        <ToDoList />
+        <OrganizationToDoList />
       </div>
 
       {/* Right side – Calendar */}

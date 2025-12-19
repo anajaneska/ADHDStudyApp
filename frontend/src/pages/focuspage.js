@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import PomodoroTimer from "../components/Pomodoro/pomodoro.js";
-import ToDoList from "../components/ToDoList/todolist.js";
+import ToDoList from "../components/ToDoList/todolistfocus.js";
 import instance from "../custom-axios/axios";
 
 export default function FocusPage() {

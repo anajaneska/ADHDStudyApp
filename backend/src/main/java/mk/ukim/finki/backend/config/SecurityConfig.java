@@ -44,12 +44,6 @@ public class SecurityConfig {
                         .requestMatchers("/","/api/auth/login","/api/auth/register").permitAll()
                         .requestMatchers("/", "/api/auth/login", "/api/auth/register").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/api/files/*/*").authenticated()
-
-                        //Add Public API calls
-
-                        //Add Only logged-in users
-                        //.requestMatchers("/api/trips/**").authenticated()
-
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)

@@ -2,12 +2,13 @@ import React from "react";
 import TagPicker from "./tagpicker";
 
 export default function TaskInput({ newTask, setNewTask, addTask, tags, userId }) {
+
   const handleTagChange = (tagIds) => {
     setNewTask({ ...newTask, tagIds });
   };
 
   return (
-    <div className="w-full flex flex-col gap-4 p-4 bg-white shadow rounded-lg">
+    <div className="w-full max-h-[80vh] overflow-y-auto flex flex-col gap-4 p-4 bg-white shadow-lg rounded-lg">
 
       {/* TITLE */}
       <div className="flex flex-col">
@@ -32,35 +33,83 @@ export default function TaskInput({ newTask, setNewTask, addTask, tags, userId }
         />
       </div>
 
-      {/* DATES */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        
+      {/* DATES & TIMES */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
         <div className="flex flex-col">
-          <label className="font-semibold mb-1">Почеток</label>
+          <label className="font-semibold mb-1">Датум на почеток</label>
           <input
-            type="datetime-local"
-            value={newTask.start}
-            onChange={(e) => setNewTask({ ...newTask, start: e.target.value })}
+            type="date"
+            value={newTask.startDate}
+            onChange={(e) => setNewTask({ ...newTask, startDate: e.target.value })}
             className="border rounded p-2 focus:ring focus:ring-blue-200"
           />
         </div>
 
         <div className="flex flex-col">
-          <label className="font-semibold mb-1">Крај</label>
+          <label className="font-semibold mb-1">Време на почеток</label>
           <input
-            type="datetime-local"
-            value={newTask.end}
-            onChange={(e) => setNewTask({ ...newTask, end: e.target.value })}
+            type="time"
+            value={newTask.startTime}
+            onChange={(e) => setNewTask({ ...newTask, startTime: e.target.value })}
             className="border rounded p-2 focus:ring focus:ring-blue-200"
           />
         </div>
 
-        <div className="flex flex-col md:col-span-2">
+        <div className="flex flex-col">
+          <label className="font-semibold mb-1">Време на крај</label>
+          <input
+            type="time"
+            value={newTask.endTime}
+            onChange={(e) => setNewTask({ ...newTask, endTime: e.target.value })}
+            className="border rounded p-2 focus:ring focus:ring-blue-200"
+          />
+        </div>
+
+        <div className="flex flex-col">
           <label className="font-semibold mb-1">Рок</label>
           <input
-            type="datetime-local"
+            type="date"
             value={newTask.dueDate}
             onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
+            className="border rounded p-2 focus:ring focus:ring-blue-200"
+          />
+        </div>
+      </div>
+
+      {/* RECURRENCE */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="flex flex-col">
+          <label className="font-semibold mb-1">Тип на повторување</label>
+          <select
+            value={newTask.recurrenceType || "NONE"}
+            onChange={(e) => setNewTask({ ...newTask, recurrenceType: e.target.value })}
+            className="border rounded p-2 focus:ring focus:ring-blue-200"
+          >
+            <option value="NONE">Нема</option>
+            <option value="DAILY">Дневно</option>
+            <option value="WEEKLY">Неделно</option>
+            <option value="MONTHLY">Месечно</option>
+          </select>
+        </div>
+
+        <div className="flex flex-col">
+          <label className="font-semibold mb-1">Интервал на повторување</label>
+          <input
+            type="number"
+            min="1"
+            value={newTask.recurrenceInterval || 1}
+            onChange={(e) => setNewTask({ ...newTask, recurrenceInterval: e.target.value })}
+            className="border rounded p-2 focus:ring focus:ring-blue-200"
+          />
+        </div>
+
+        <div className="flex flex-col">
+          <label className="font-semibold mb-1">Крај на повторување</label>
+          <input
+            type="date"
+            value={newTask.recurrenceEnd || ""}
+            onChange={(e) => setNewTask({ ...newTask, recurrenceEnd: e.target.value })}
             className="border rounded p-2 focus:ring focus:ring-blue-200"
           />
         </div>
@@ -79,16 +128,14 @@ export default function TaskInput({ newTask, setNewTask, addTask, tags, userId }
 
       {/* BUTTON */}
       <button
-  onClick={addTask}
-  className="mt-2 text-white py-2 rounded transition"
-  style={{
-    backgroundColor: "rgba(139, 127, 199, 1)",
-  }}
-  onMouseOver={(e) => (e.target.style.backgroundColor = "rgba(120, 110, 175, 1)")}
-  onMouseOut={(e) => (e.target.style.backgroundColor = "rgba(139, 127, 199, 1)")}
->
-  Додади задача
-</button>
+        onClick={addTask}
+        className="mt-2 text-white py-2 rounded transition"
+        style={{ backgroundColor: "rgba(139, 127, 199, 1)" }}
+        onMouseOver={(e) => (e.target.style.backgroundColor = "rgba(120, 110, 175, 1)")}
+        onMouseOut={(e) => (e.target.style.backgroundColor = "rgba(139, 127, 199, 1)")}
+      >
+        Додади задача
+      </button>
     </div>
   );
 }
