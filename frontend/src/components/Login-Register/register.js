@@ -11,23 +11,23 @@ export default function Register() {
     e.preventDefault();
     try {
       await instance.post('/auth/register', form);
-      alert("Registered successfully!");
+      alert("Успешна регистрација!");
       navigate(`/login`);
     } catch (err) {
-      alert("Registration failed. Please try again.");
+      alert("Неуспешна регистрација. Обиди се повторно.");
     }
   };
 
   return (
     <div className="register-container">
       <div className="register-card">
-        <h2 className="register-title">Create Your Account ✨</h2>
-        <p className="register-subtitle">Let’s get started on your focus journey</p>
+        <h2 className="register-title">Креирај Koрисничка Сметка ✨</h2>
+        <p className="register-subtitle">Започни со твојата фокус патека</p>
 
         <form onSubmit={handleSubmit} className="register-form">
           <input
             type="text"
-            placeholder="Username"
+            placeholder="Корисничко име"
             value={form.username}
             onChange={(e) => setForm({ ...form, username: e.target.value })}
             required
@@ -35,18 +35,18 @@ export default function Register() {
           />
           <input
             type="password"
-            placeholder="Password"
+            placeholder="Лозинка"
             value={form.password}
             onChange={(e) => setForm({ ...form, password: e.target.value })}
             required
             className="register-input"
           />
-          <button type="submit" className="register-button">Register</button>
+          <button type="submit" className="register-button">Регистрација</button>
         </form>
 
         <p className="register-login-link">
-          Already have an account?{" "}
-          <span onClick={() => navigate('/login')} className="link">Login</span>
+          Веќе имаш корисничка сметка?{" "}
+          <span onClick={() => navigate('/login')} className="link">Најава</span>
         </p>
       </div>
     </div>

@@ -15,11 +15,11 @@ export default function PomodoroControls({
           else setIsRunning(false);
         }}
       >
-        {isRunning ? "Break" : "Start"}
+        {isRunning ? "Пауза" : "Старт"}
       </button>
 
       <button className="btn btn-reset" onClick={resetTimer}>
-        Reset
+        Ресетирај
       </button>
     </div>
   );

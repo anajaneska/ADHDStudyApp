@@ -1,19 +1,29 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { Calendar, Views, dateFnsLocalizer } from "react-big-calendar";
+import React, {useState,useEffect,useMemo,useCallback,} from "react";
+import {Calendar,Views,dateFnsLocalizer,} from "react-big-calendar";
 import withDragAndDrop from "react-big-calendar/lib/addons/dragAndDrop";
-import { format, parse, startOfWeek, getDay } from "date-fns";
+import {format,parse,startOfWeek,getDay,} from "date-fns";
 import enUS from "date-fns/locale/en-US";
-import "react-big-calendar/lib/css/react-big-calendar.css";
-import "react-big-calendar/lib/addons/dragAndDrop/styles.css";
 import dayjs from "dayjs";
 import instance from "../../custom-axios/axios";
+import TaskModal from "./taskmodal";
+import "react-big-calendar/lib/css/react-big-calendar.css";
+import "react-big-calendar/lib/addons/dragAndDrop/styles.css";
 import "./calendar.css";
+import mk from "date-fns/locale/mk";
 
-import TaskModal from "./taskmodal"; // modal provided below
 
+/* ------------------------------------------------------------------ */
+/* Calendar setup                                                      */
+/* ------------------------------------------------------------------ */
+
+// Enable drag & drop on calendar
 const DnDCalendar = withDragAndDrop(Calendar);
 
-const locales = { "en-US": enUS };
+// Locale configuration for react-big-calendar
+const locales = {
+  "mk-MK": mk,
+};
+// Localizer tells the calendar how to work with dates
 const localizer = dateFnsLocalizer({
   format,
   parse,
@@ -22,209 +32,259 @@ const localizer = dateFnsLocalizer({
   locales,
 });
 
+const messagesMk = {
+  today: "Денес",
+  previous: "Назад",
+  next: "Напред",
+  month: "Месец",
+  week: "Недела",
+  day: "Ден",
+  agenda: "Агенда",
+  showMore: (total) => `+${total} повеќе`,
+};
+
+/* ------------------------------------------------------------------ */
+/* Helper functions                                                    */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Converts a backend task into one or more calendar events.
+ * - Blue event → task duration (start → end)
+ * - Red event  → due date
+ */
+function taskToEvents(task) {
+  const events = [];
+
+  const title = task.title || "Untitled task";
+  const start = task.start ? new Date(task.start) : null;
+  const end = task.end ? new Date(task.end) : null;
+  const dueDate = task.dueDate ? new Date(task.dueDate) : null;
+
+  if (!start && !dueDate) return events;
+
+  if (start && dueDate && start.getTime() === dueDate.getTime()) {
+    events.push({
+      id: `${task.id}-due`,
+      taskId: task.id,
+      title,
+      start: dueDate,
+      end: dueDate,
+      type: "due",
+      color: "#f87171",
+    });
+    return events;
+  }
+
+  if (start) {
+    events.push({
+      id: `${task.id}-task`,
+      taskId: task.id,
+      title,
+      start,
+      end: end ?? new Date(start.getTime() + 60 * 60 * 1000),
+      type: "task",
+      color: "#60a5fa",
+    });
+  }
+
+  if (dueDate) {
+    events.push({
+      id: `${task.id}-due`,
+      taskId: task.id,
+      title: `${title} (Due)`,
+      start: dueDate,
+      end: dueDate,
+      type: "due",
+      color: "#f87171",
+    });
+  }
+
+  return events;
+}
+
+
+/* ------------------------------------------------------------------ */
+/* Main component                                                      */
+/* ------------------------------------------------------------------ */
+
 export default function CalendarView() {
+  /* ------------------------- State -------------------------------- */
+
   const [tasks, setTasks] = useState([]);
   const [currentView, setCurrentView] = useState(Views.MONTH);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // modal state
+  // Modal state
   const [modalOpen, setModalOpen] = useState(false);
   const [activeTask, setActiveTask] = useState(null);
   const [selectedSlot, setSelectedSlot] = useState(null);
 
+  /* ------------------------- Auth --------------------------------- */
+
+  // Ideally these should come from an AuthContext
   const userId = localStorage.getItem("userId");
   const token = localStorage.getItem("jwt");
 
-  // fetch tasks
+  /* ------------------------- API ---------------------------------- */
+
+  /**
+   * Fetch tasks from backend
+   */
   const fetchTasks = useCallback(async () => {
     if (!userId) return;
+
     setLoading(true);
+    setError("");
+
     try {
       const res = await instance.get(`/tasks/${userId}`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
+
       setTasks(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error("Error fetching tasks:", err);
-      setError("Failed to fetch tasks.");
+      setError("Failed to load tasks.");
     } finally {
       setLoading(false);
     }
   }, [userId, token]);
 
+  // Fetch tasks on component mount
   useEffect(() => {
     fetchTasks();
   }, [fetchTasks]);
 
-  // convert tasks -> calendar events
-  // logic:
-  // - full task event (start -> end) shown in blue when start exists (end defaults on creation if missing)
-  // - due date shown separately as red
-  // - if start and dueDate have identical timestamp -> show only due (red)
+  /* --------------------- Derived data ------------------------------ */
+
+  /**
+   * Convert tasks → calendar events
+   * useMemo prevents recalculation on every render
+   */
   const events = useMemo(() => {
-    return tasks.flatMap((task) => {
-      const out = [];
-
-      const start = task.start ? new Date(task.start) : null;
-      // treat end: if present use it; backend might not set it — front-end sets on create/update
-      const end = task.end ? new Date(task.end) : null;
-      const dueDate = task.dueDate ? new Date(task.dueDate) : null;
-
-      // nothing to show
-      if (!start && !dueDate) return [];
-
-      // If start and dueDate exactly same timestamp -> show only due (red)
-      if (start && dueDate && start.getTime() === dueDate.getTime()) {
-        out.push({
-          id: `${task.id}-due`,
-          taskId: task.id,
-          title: task.title,
-          start: dueDate,
-          end: dueDate,
-          allDay: false,
-          color: "#f87171",
-          type: "due",
-        });
-        return out;
-      }
-
-      // Show start->end (full task) in blue if start exists
-      if (start) {
-        // if end missing, show one-hour event on calendar (frontend should set end on create; for safety, set display end here)
-        const displayEnd = end ? end : new Date(start.getTime() + 60 * 60 * 1000);
-        out.push({
-          id: `${task.id}-task`,
-          taskId: task.id,
-          title: task.title,
-          start,
-          end: displayEnd,
-          allDay: false,
-          color: "#60a5fa",
-          type: "task", // dragging/resizing updates start/end
-        });
-      }
-
-      // Show due date separately in red if present (unless identical handled above)
-      if (dueDate) {
-        out.push({
-          id: `${task.id}-due`,
-          taskId: task.id,
-          title: task.title + " (Due)",
-          start: dueDate,
-          end: dueDate,
-          allDay: false,
-          color: "#f87171",
-          type: "due",
-        });
-      }
-
-      return out;
-    });
+    return tasks.flatMap(taskToEvents);
   }, [tasks]);
 
-  // helper to keep duration when moving task event: if task had an end, preserve duration
-  const findTaskById = (taskId) => tasks.find((t) => t.id === taskId);
+  /**
+   * Find original task by ID (used when dragging/resizing)
+   */
+  const findTaskById = useCallback(
+    (taskId) => tasks.find((t) => t.id === taskId),
+    [tasks]
+  );
 
-  // onEventDrop: event is the calendar event object we created above
-  const onEventDrop = async ({ event, start: newStart, end: newEnd, isAllDay }) => {
-    const taskId = event.taskId;
-    const originalTask = findTaskById(taskId);
+  /* -------------------- Event updates ------------------------------ */
+
+  /**
+   * Shared logic for updating a task after drag or resize
+   */
+  const updateTaskDates = async (taskId, payload) => {
+    await instance.put(`/tasks/${taskId}`, payload, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    await fetchTasks();
+  };
+
+  /**
+   * Drag event to new date
+   */
+  const onEventDrop = async ({ event, start }) => {
+    const originalTask = findTaskById(event.taskId);
     if (!originalTask) return;
 
     try {
+      // Due-date drag
       if (event.type === "due") {
-        // update dueDate only
-        const payload = { dueDate: dayjs(newStart).toISOString() };
-        await instance.put(`/tasks/${taskId}`, payload, {
-          headers: { Authorization: `Bearer ${token}` },
+        await updateTaskDates(event.taskId, {
+          dueDate: dayjs(start).toISOString(),
         });
-      } else {
-        // event.type === "task" (start/end)
-        // If the event had duration, preserve it; otherwise set end = newStart + 1 hour
-        const origStart = originalTask.start ? new Date(originalTask.start) : null;
-        const origEnd = originalTask.end ? new Date(originalTask.end) : null;
-
-        let payload = {};
-        // newStart is the new start date after drop
-        payload.start = dayjs(newStart).toISOString();
-
-        if (origStart && origEnd) {
-          const origDurationMs = origEnd.getTime() - origStart.getTime();
-          const newEndPreserved = new Date(newStart.getTime() + origDurationMs);
-          payload.end = dayjs(newEndPreserved).toISOString();
-        } else {
-          // no original end — default to 1 hour after new start
-          payload.end = dayjs(newStart).add(1, "hour").toISOString();
-        }
-
-        await instance.put(`/tasks/${taskId}`, payload, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        return;
       }
 
-      // refresh
-      await fetchTasks();
+      // Task drag → preserve original duration
+      const origStart = originalTask.start
+        ? new Date(originalTask.start)
+        : null;
+      const origEnd = originalTask.end
+        ? new Date(originalTask.end)
+        : null;
+
+      const duration =
+        origStart && origEnd
+          ? origEnd.getTime() - origStart.getTime()
+          : 60 * 60 * 1000;
+
+      await updateTaskDates(event.taskId, {
+        start: dayjs(start).toISOString(),
+        end: dayjs(new Date(start.getTime() + duration)).toISOString(),
+      });
     } catch (err) {
-      console.error("Error updating task after drop:", err);
+      console.error("Drag update failed:", err);
     }
   };
 
-  // onEventResize - update start/end for task event. treat like onEventDrop for simplicity
-  const onEventResize = async ({ event, start: newStart, end: newEnd }) => {
-    const taskId = event.taskId;
-    if (!taskId) return;
+  /**
+   * Resize event duration
+   */
+  const onEventResize = async ({ event, start, end }) => {
     try {
       if (event.type === "due") {
-        // resizing due doesn't make sense — treat as updating due to new start
-        const payload = { dueDate: dayjs(newStart).toISOString() };
-        await instance.put(`/tasks/${taskId}`, payload, {
-          headers: { Authorization: `Bearer ${token}` },
+        await updateTaskDates(event.taskId, {
+          dueDate: dayjs(start).toISOString(),
         });
-      } else {
-        // update both start and end with newStart/newEnd
-        const payload = {
-          start: newStart ? dayjs(newStart).toISOString() : null,
-          end: newEnd ? dayjs(newEnd).toISOString() : null,
-        };
-
-        // if newEnd missing (shouldn't happen on resize) default to +1h
-        if (!payload.end && payload.start) {
-          payload.end = dayjs(payload.start).add(1, "hour").toISOString();
-        }
-
-        await instance.put(`/tasks/${taskId}`, payload, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        return;
       }
 
-      await fetchTasks();
+      await updateTaskDates(event.taskId, {
+        start: dayjs(start).toISOString(),
+        end: dayjs(end ?? dayjs(start).add(1, "hour")).toISOString(),
+      });
     } catch (err) {
-      console.error("Error updating task after resize:", err);
+      console.error("Resize update failed:", err);
     }
   };
 
-  // click empty slot -> open create modal with selected slot
+  /* -------------------- UI handlers ------------------------------- */
+
+  // Click empty slot → create task
   const handleSelectSlot = (slotInfo) => {
-    // slotInfo contains start/end
     setActiveTask(null);
     setSelectedSlot(slotInfo);
     setModalOpen(true);
   };
 
-  // click event -> open edit modal
+  // Click event → edit task
   const handleSelectEvent = (event) => {
-    const t = tasks.find((x) => x.id === event.taskId);
-    if (!t) return;
-    setActiveTask(t);
-    setSelectedSlot({ start: event.start, end: event.end });
+    const task = findTaskById(event.taskId);
+    if (!task) return;
+
+    setActiveTask(task);
+    setSelectedSlot({
+      start: event.start,
+      end: event.end,
+    });
     setModalOpen(true);
   };
 
+  /* -------------------- Rendering -------------------------------- */
+
   return (
     <div className="bg-white rounded-2xl shadow-lg p-4 w-full h-[80vh]">
-      {loading && <p className="text-center text-gray-500">Loading tasks...</p>}
-      {error && <p className="text-center text-red-500">{error}</p>}
+      {loading && (
+        <p className="text-center text-gray-500">
+          Loading tasks...
+        </p>
+      )}
+
+      {error && (
+        <p className="text-center text-red-500">{error}</p>
+      )}
 
       {!loading && !error && (
         <DnDCalendar
@@ -234,7 +294,7 @@ export default function CalendarView() {
           endAccessor="end"
           selectable
           resizable
-          draggableAccessor={() => true}
+          draggableAccessor={(event) => event.type === "task"}
           onEventDrop={onEventDrop}
           onEventResize={onEventResize}
           onSelectSlot={handleSelectSlot}
@@ -243,10 +303,12 @@ export default function CalendarView() {
           onView={setCurrentView}
           views={[Views.DAY, Views.WEEK, Views.MONTH]}
           popup
+          messages={messagesMk}
+          culture="mk-MK"
           style={{ height: "100%" }}
           eventPropGetter={(event) => ({
             style: {
-              backgroundColor: event.color || "#3b82f6",
+              backgroundColor: event.color,
               color: "white",
               borderRadius: "6px",
               border: "none",
@@ -258,14 +320,14 @@ export default function CalendarView() {
 
       {modalOpen && (
         <TaskModal
+          task={activeTask}
+          selectedSlot={selectedSlot}
+          refresh={fetchTasks}
           onClose={() => {
             setModalOpen(false);
             setActiveTask(null);
             setSelectedSlot(null);
           }}
-          task={activeTask}
-          selectedSlot={selectedSlot}
-          refresh={fetchTasks}
         />
       )}
     </div>

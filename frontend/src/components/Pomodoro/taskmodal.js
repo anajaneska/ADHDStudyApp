@@ -63,7 +63,7 @@ export default function TaskModal({
             className="btn-secondary"
             onClick={() => setShowTaskModal(false)}
           >
-            Cancel
+            Откажи
           </button>
         </div>
       </div>

@@ -110,12 +110,12 @@ export default function PomodoroTimer({ tasks, selectedTask, setSelectedTask }) 
         if (prev <= 1) {
           clearInterval(timer);
           if (cycle === "work") {
-            alert("Time for a break ☕");
+            alert("Време за пауза ☕");
             setCycle("break");
             setTimeLeft(breakDuration * 60);
             setSelectedTask(null);
           } else {
-            alert("Time for work 💪");
+            alert("Време за работа 💪");
             setCycle("work");
             setTimeLeft(workDuration * 60);
           }
@@ -148,7 +148,7 @@ export default function PomodoroTimer({ tasks, selectedTask, setSelectedTask }) 
   return (
     <div className="pomodoro-container">
       <div className="pomodoro-header">
-        <h2 className="pomodoro-title">Pomodoro timer</h2>
+        <h2 className="pomodoro-title">Помодоро тајмер</h2>
         <div className="settings-gear" onClick={() => setEditMode(true)}>
           <FaCog size={24} />
         </div>
@@ -159,13 +159,13 @@ export default function PomodoroTimer({ tasks, selectedTask, setSelectedTask }) 
           className={`btn ${cycle === "work" ? "btn-active" : ""}`}
           onClick={() => switchCycle("work")}
         >
-          Focus ({workDuration})
+          Фокус ({workDuration})
         </button>
         <button
           className={`btn ${cycle === "break" ? "btn-active" : ""}`}
           onClick={() => switchCycle("break")}
         >
-          Break ({breakDuration})
+          Пауза ({breakDuration})
         </button>
       </div>
 

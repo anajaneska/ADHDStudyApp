@@ -14,17 +14,17 @@ export default function FileViewer({ file }) {
       <div className="flex gap-4 border-b pb-2 mb-4">
         <button onClick={() => setTab("summary")}
           className={`${tab === "summary" ? "border-b-2 border-blue-500 font-semibold" : ""}`}>
-          Summary
+          Сумаризација
         </button>
 
         <button onClick={() => setTab("flashcards")}
           className={`${tab === "flashcards" ? "border-b-2 border-blue-500 font-semibold" : ""}`}>
-          Flashcards
+          Картички за Учење
         </button>
 
         <button onClick={() => setTab("quiz")}
           className={`${tab === "quiz" ? "border-b-2 border-blue-500 font-semibold" : ""}`}>
-          Quiz
+          Квиз
         </button>
       </div>
 

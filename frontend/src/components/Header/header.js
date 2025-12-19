@@ -39,19 +39,19 @@ export default function Header() {
                 to="/focus"
                 className={({ isActive }) => isActive ? "nav-link active-link" : "nav-link"}
               >
-                <FaClock className="nav-icon" /> Focus
+                <FaClock className="nav-icon" /> Фокус
               </NavLink>
               <NavLink
                 to="/organize"
                 className={({ isActive }) => isActive ? "nav-link active-link" : "nav-link"}
               >
-                <FaCalendarAlt className="nav-icon" /> Organize
+                <FaCalendarAlt className="nav-icon" /> Планирање
               </NavLink>
               <NavLink
                 to="/filedashboard"
                 className={({ isActive }) => isActive ? "nav-link active-link" : "nav-link"}
               >
-                <FaBookOpen className="nav-icon" /> Study
+                <FaBookOpen className="nav-icon" /> Учење
               </NavLink>
             </nav>
           </div>
@@ -59,12 +59,12 @@ export default function Header() {
           <div className="auth-section">
             {!isLoggedIn ? (
               <>
-                <Link to="/login" className="nav-link auth-link">Login</Link>
-                <Link to="/register" className="nav-link auth-link">Register</Link>
+                <Link to="/login" className="nav-link auth-link">Најава</Link>
+                <Link to="/register" className="nav-link auth-link">Регистрација</Link>
               </>
             ) : (
               <button className="logout-btn" onClick={handleLogout}>
-                Logout
+                Одјава
               </button>
             )}
           </div>

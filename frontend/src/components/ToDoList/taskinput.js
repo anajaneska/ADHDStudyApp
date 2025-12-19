@@ -11,10 +11,10 @@ export default function TaskInput({ newTask, setNewTask, addTask, tags, userId }
 
       {/* TITLE */}
       <div className="flex flex-col">
-        <label className="font-semibold mb-1">Title</label>
+        <label className="font-semibold mb-1">Наслов</label>
         <input
           type="text"
-          placeholder="Task title"
+          placeholder="Наслов на задача"
           value={newTask.title}
           onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
           className="border rounded p-2 focus:ring focus:ring-blue-200"
@@ -23,9 +23,9 @@ export default function TaskInput({ newTask, setNewTask, addTask, tags, userId }
 
       {/* DESCRIPTION */}
       <div className="flex flex-col">
-        <label className="font-semibold mb-1">Description</label>
+        <label className="font-semibold mb-1">Опис</label>
         <textarea
-          placeholder="Task description"
+          placeholder="Опис на задача"
           value={newTask.description}
           onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
           className="border rounded p-2 h-24 resize-none focus:ring focus:ring-blue-200"
@@ -36,7 +36,7 @@ export default function TaskInput({ newTask, setNewTask, addTask, tags, userId }
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         
         <div className="flex flex-col">
-          <label className="font-semibold mb-1">Start</label>
+          <label className="font-semibold mb-1">Почеток</label>
           <input
             type="datetime-local"
             value={newTask.start}
@@ -46,7 +46,7 @@ export default function TaskInput({ newTask, setNewTask, addTask, tags, userId }
         </div>
 
         <div className="flex flex-col">
-          <label className="font-semibold mb-1">End</label>
+          <label className="font-semibold mb-1">Крај</label>
           <input
             type="datetime-local"
             value={newTask.end}
@@ -56,7 +56,7 @@ export default function TaskInput({ newTask, setNewTask, addTask, tags, userId }
         </div>
 
         <div className="flex flex-col md:col-span-2">
-          <label className="font-semibold mb-1">Due date</label>
+          <label className="font-semibold mb-1">Рок</label>
           <input
             type="datetime-local"
             value={newTask.dueDate}
@@ -68,7 +68,7 @@ export default function TaskInput({ newTask, setNewTask, addTask, tags, userId }
 
       {/* TAG PICKER */}
       <div className="flex flex-col">
-        <label className="font-semibold mb-1">Tags</label>
+        <label className="font-semibold mb-1">Тагови</label>
         <TagPicker
           userId={userId}
           selectedTagIds={newTask.tagIds}
@@ -87,7 +87,7 @@ export default function TaskInput({ newTask, setNewTask, addTask, tags, userId }
   onMouseOver={(e) => (e.target.style.backgroundColor = "rgba(120, 110, 175, 1)")}
   onMouseOut={(e) => (e.target.style.backgroundColor = "rgba(139, 127, 199, 1)")}
 >
-  Add Task
+  Додади задача
 </button>
     </div>
   );

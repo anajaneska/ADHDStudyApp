@@ -34,13 +34,13 @@ export default function Login() {
   return (
     <div className="login-container">
       <div className="login-card">
-        <h2 className="login-title">Welcome Back 👋</h2>
-        <p className="login-subtitle">Focus starts with signing in</p>
+        <h2 className="login-title">Добредојде Назад 👋</h2>
+        <p className="login-subtitle">Фокус почнува со најава</p>
 
         <form onSubmit={handleSubmit} className="login-form">
           <input
             type="text"
-            placeholder="Username"
+            placeholder="Корисничко име"
             value={form.username}
             onChange={(e) => setForm({ ...form, username: e.target.value })}
             required
@@ -48,17 +48,17 @@ export default function Login() {
           />
           <input
             type="password"
-            placeholder="Password"
+            placeholder="Лозинка"
             value={form.password}
             onChange={(e) => setForm({ ...form, password: e.target.value })}
             required
             className="login-input"
           />
-          <button type="submit" className="login-button">Login</button>
+          <button type="submit" className="login-button">Најава</button>
         </form>
         <p className="register-login-link">
-          Don't have an account?{" "}<br/>
-          <span onClick={() => navigate('/register')} className="link">Create an account</span>
+          Немаш Корисничка Сметка?{" "}<br/>
+          <span onClick={() => navigate('/register')} className="link">Креирај Корисничка Сметка</span>
         </p>
       </div>
     </div>

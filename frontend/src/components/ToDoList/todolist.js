@@ -184,8 +184,8 @@ if (filterDate) {
     <div className="todo-container">
       {!focusedTaskId && (
         <div className="top-bar">
-          <h3 className="todo-title">To-Do List</h3>
-          <button className="add-btn" onClick={() => setShowAddModal(true)}>+ Add Task</button>
+          <h3 className="todo-title">To-Do Листа</h3>
+          <button className="add-btn" onClick={() => setShowAddModal(true)}>+ Додади задача</button>
         </div>
       )}
 
@@ -194,7 +194,7 @@ if (filterDate) {
   <div className="filters-bar">
     {/* Tag Filter */}
     <div className="filter-group full-width">
-      <label className="filter-label">Tags</label>
+      <label className="filter-label">Тагови</label>
       <TagPicker
         selectedTagIds={filterTagIds}
         onTagChange={setFilterTagIds}
@@ -204,7 +204,7 @@ if (filterDate) {
 
     {/* Date Filter */}
     <div className="filter-group">
-      <label className="filter-label">Start Date</label>
+      <label className="filter-label">Датум</label>
       <input
         type="date"
         className="filter-input"
@@ -221,13 +221,10 @@ if (filterDate) {
         setFilterDate("");
       }}
     >
-      Reset
+      Ресетирај филтри
     </button>
   </div>
 </div>
-
-
-
 
 
       {showAddModal && (
@@ -258,7 +255,7 @@ if (filterDate) {
         position: "relative",
       }}
     >
-      <h3>Add task</h3>
+      <h3>Додади задача</h3>
       <TaskInput
         newTask={newTask}
         setNewTask={setNewTask}
@@ -270,7 +267,7 @@ if (filterDate) {
           className="btn-secondary"
           onClick={() => setShowAddModal(false)}
         >
-          Cancel
+          Откажи
         </button>
       </div>
     </div>
@@ -280,7 +277,7 @@ if (filterDate) {
 
       <ul className="todo-list">
   {filteredTasksArray.length === 0 ? (
-    <p className="no-tasks">No tasks.</p>
+    <p className="no-tasks">Нема задачи.</p>
   ) : (
     filteredTasksArray.map((t) => (
       <TaskItem

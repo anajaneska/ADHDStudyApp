@@ -11,7 +11,7 @@ export default function PomodoroDisplay({ cycle, timeLeft, selectedTask }) {
     <div className="pomodoro-display">
       <p className="timer">{formatTime(timeLeft)}</p>
       {selectedTask && (
-        <p className="task">Task: <span>{selectedTask.title}</span></p>
+        <p className="task">задача: <span>{selectedTask.title}</span></p>
       )}
     </div>
   );

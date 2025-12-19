@@ -3,7 +3,7 @@ import React from "react";
 export default function FileSidebar({ files, onSelect, onDelete }) {
   return (
     <div className="w-64 bg-white shadow-xl p-4 border-r overflow-y-auto">
-      <h2 className="text-xl font-bold mb-4">Your Files</h2>
+      <h2 className="text-xl font-bold mb-4">Твоите Датотеки</h2>
 
       <ul className="space-y-2">
         {files.map((file) => (

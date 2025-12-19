@@ -60,11 +60,27 @@ public class TaskServiceImpl implements TaskService {
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Task not found"));
 
-        task.setTitle(request.getTitle());
-        task.setDescription(request.getDescription());
-        task.setStart(request.getStart());
-        task.setEnd(request.getEnd());
-        task.setDueDate(request.getDueDate());
+        // Update only fields that are present (non-null)
+
+        if (request.getTitle() != null) {
+            task.setTitle(request.getTitle());
+        }
+
+        if (request.getDescription() != null) {
+            task.setDescription(request.getDescription());
+        }
+
+        if (request.getStart() != null) {
+            task.setStart(request.getStart());
+        }
+
+        if (request.getEnd() != null) {
+            task.setEnd(request.getEnd());
+        }
+
+        if (request.getDueDate() != null) {
+            task.setDueDate(request.getDueDate());
+        }
 
         if (request.getTagIds() != null) {
             List<Tag> tags = tagRepository.findAllById(request.getTagIds());
@@ -73,6 +89,7 @@ public class TaskServiceImpl implements TaskService {
 
         return taskRepository.save(task);
     }
+
 
     @Override
     public Task toggleTaskCompletion(Long id) {

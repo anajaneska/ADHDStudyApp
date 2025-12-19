@@ -135,7 +135,7 @@ export default function TaskModal({ onClose, task, selectedSlot, refresh }) {
   return (
     <div className="modal-overlay" style={modalOverlayStyle}>
       <div className="modal-content" style={modalContentStyle}>
-        <h3>{task ? "Edit task" : "Create task"}</h3>
+        <h3>{task ? "Промени задача" : "Создади задача"}</h3>
 
         {/* reuse your TaskInput UI — it expects newTask, setNewTask, addTask */}
         <TaskInput
@@ -150,19 +150,19 @@ export default function TaskModal({ onClose, task, selectedSlot, refresh }) {
           {task ? (
             <>
               <button onClick={handleUpdate} className="btn-primary">
-                Save
+                Зачувај
               </button>
               <button onClick={handleDelete} className="btn-danger">
-                Delete
+                Избриши
               </button>
             </>
           ) : (
             <button onClick={handleCreate} className="btn-primary">
-              Create
+              Создади
             </button>
           )}
           <button onClick={onClose} className="btn-secondary">
-            Cancel
+            Откажи
           </button>
         </div>
       </div>

@@ -59,7 +59,7 @@ const handleSave = () => {
             }
           />
 
-          <label>Start:</label>
+          <label>Почеток:</label>
           <input
             type="datetime-local"
             value={editData.start}
@@ -68,7 +68,7 @@ const handleSave = () => {
             }
           />
 
-          <label>End:</label>
+          <label>Крај:</label>
           <input
             type="datetime-local"
             value={editData.end}
@@ -77,7 +77,7 @@ const handleSave = () => {
             }
           />
 
-          <label>Due:</label>
+          <label>Рок:</label>
           <input
             type="datetime-local"
             value={editData.dueDate}
@@ -95,8 +95,8 @@ const handleSave = () => {
             />
 
           <div className="edit-actions">
-            <button className="save" onClick={handleSave}>Save</button>
-            <button className="cancel" onClick={() => setIsEditing(false)}>Cancel</button>
+            <button className="save" onClick={handleSave}>Зачувај</button>
+            <button className="cancel" onClick={() => setIsEditing(false)}>Откажи</button>
           </div>
         </div>
       ) : (
@@ -157,9 +157,6 @@ const handleSave = () => {
   </div>
 )}
 
-
-
-
           {/* ESTIMATE + DATES */}
           <div className="text-sm text-gray-600 flex flex-wrap gap-4">
             {task.estimatedMinutes != null && (
@@ -169,15 +166,15 @@ const handleSave = () => {
             )}
 
             {task.start && (
-              <span>Start: {dayjs(task.start).format("DD/MM HH:mm")}</span>
+              <span>Почеток: {dayjs(task.start).format("DD/MM HH:mm")}</span>
             )}
 
             {task.end && (
-              <span>End: {dayjs(task.end).format("DD/MM HH:mm")}</span>
+              <span>Крај: {dayjs(task.end).format("DD/MM HH:mm")}</span>
             )}
 
             {task.dueDate && (
-              <span>Due: {dayjs(task.dueDate).format("DD/MM HH:mm")}</span>
+              <span>Рок: {dayjs(task.dueDate).format("DD/MM HH:mm")}</span>
             )}
           </div>
 
@@ -187,7 +184,7 @@ const handleSave = () => {
     className="subtasks-toggle-btn mt-1 flex items-center gap-1 text-sm"
     onClick={() => setShowSubtasks(!showSubtasks)}
   >
-    {showSubtasks ? "Hide subtasks" : "Show subtasks"}
+    {showSubtasks ? "Сокривај подзадачи" : "Прикажи подзадачи"}
     <span
       className={`inline-block transition-transform duration-200 ${
         showSubtasks ? "rotate-180" : ""

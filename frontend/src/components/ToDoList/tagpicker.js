@@ -102,7 +102,7 @@ export default function TagPicker({ selectedTagIds, onTagChange, tags: parentTag
           e.target.value = "";
         }}
       >
-        <option value="" disabled>Select tag…</option>
+        <option value="" disabled>Одбери таг</option>
 
         {tags
           .filter((t) => !selectedTagIds.includes(t.id))
@@ -112,7 +112,7 @@ export default function TagPicker({ selectedTagIds, onTagChange, tags: parentTag
             </option>
           ))}
 
-        <option value="create-new">+ Create new tag</option>
+        <option value="create-new">+ Креирај нов таг</option>
       </select>
 
       {/* CREATE NEW TAG FORM */}
@@ -120,7 +120,7 @@ export default function TagPicker({ selectedTagIds, onTagChange, tags: parentTag
         <div className="flex gap-2 items-center p-2 border rounded bg-gray-50 mt-1">
           <input
             type="text"
-            placeholder="Tag name"
+            placeholder="Име на таг"
             value={newTagName}
             onChange={(e) => setNewTagName(e.target.value)}
             className="border p-1 rounded flex-1"
@@ -137,14 +137,14 @@ export default function TagPicker({ selectedTagIds, onTagChange, tags: parentTag
             onClick={createTag}
             className="bg-blue-600 text-white px-3 py-1 rounded"
           >
-            Add
+            Додади
           </button>
 
           <button
             onClick={() => setShowCreateForm(false)}
             className="px-2 py-1"
           >
-            Cancel
+            Откажи
           </button>
         </div>
       )}
