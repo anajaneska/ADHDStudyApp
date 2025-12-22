@@ -5,6 +5,8 @@ import lombok.RequiredArgsConstructor;
 import mk.ukim.finki.backend.model.Document;
 import mk.ukim.finki.backend.model.Question;
 import mk.ukim.finki.backend.model.Quiz;
+import mk.ukim.finki.backend.model.exeptions.DocumentDoesNotExistException;
+import mk.ukim.finki.backend.model.exeptions.QuizDoesNotExistException;
 import mk.ukim.finki.backend.repository.DocumentRepository;
 import mk.ukim.finki.backend.repository.QuestionRepository;
 import mk.ukim.finki.backend.repository.QuizRepository;
@@ -30,7 +32,7 @@ public class QuizServiceImpl implements QuizService {
     @Override
     public Quiz generateAndSaveQuiz(Long fileId, Long userId) throws IOException {
         Document document = documentRepository.findByIdAndUserId(fileId, userId)
-                .orElseThrow(() -> new RuntimeException("Document not found"));
+                .orElseThrow(() -> new DocumentDoesNotExistException(fileId));
 
         String text = aiService.extractTextFromDocument(document.getFileUrl());
         String quizJson = aiService.generateQuiz(text);
@@ -59,14 +61,14 @@ public class QuizServiceImpl implements QuizService {
     @Override
     public Quiz getQuiz(Long fileId, Long userId) {
         return quizRepository.findByDocumentIdAndDocumentUserId(fileId, userId)
-                .orElseThrow(() -> new RuntimeException("Quiz not found"));
+                .orElseThrow(() -> new QuizDoesNotExistException(fileId));
     }
 
     @Override
     @Transactional
     public void deleteQuiz(Long fileId) {
         Quiz quiz = quizRepository.findByDocumentId(fileId)
-                .orElseThrow(() -> new RuntimeException("Quiz not found"));
+                .orElseThrow(() -> new QuizDoesNotExistException(fileId));
 
         Long quizId = quiz.getId();
 

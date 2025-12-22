@@ -1,28 +1,26 @@
 package mk.ukim.finki.backend.service.impl;
 
-import mk.ukim.finki.backend.model.Subtask;
-import mk.ukim.finki.backend.model.Tag;
-import mk.ukim.finki.backend.model.Task;
-import mk.ukim.finki.backend.model.TaskCompletion;
+
+import lombok.RequiredArgsConstructor;
+import mk.ukim.finki.backend.model.*;
+import mk.ukim.finki.backend.model.dto.TaskCreateRequest;
 import mk.ukim.finki.backend.model.dto.TaskUpdateRequest;
 import mk.ukim.finki.backend.model.enumerations.RecurrenceType;
 import mk.ukim.finki.backend.model.exeptions.TaskDoesNotExistException;
-import mk.ukim.finki.backend.repository.SubtaskRepository;
-import mk.ukim.finki.backend.repository.TagRepository;
-import mk.ukim.finki.backend.repository.TaskCompletionRepository;
-import mk.ukim.finki.backend.repository.TaskRepository;
+import mk.ukim.finki.backend.model.exeptions.UserDoesNotExistException;
+import mk.ukim.finki.backend.repository.*;
+import mk.ukim.finki.backend.service.TagService;
 import mk.ukim.finki.backend.service.TaskService;
+import mk.ukim.finki.backend.service.UserService;
 import mk.ukim.finki.backend.service.impl.AiServiceImpl.AiBreakdownServiceHF;
 import mk.ukim.finki.backend.service.impl.AiServiceImpl.AiEstimationServiceHF;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class TaskServiceImpl implements TaskService {
 
     private final TaskRepository taskRepository;
@@ -31,17 +29,9 @@ public class TaskServiceImpl implements TaskService {
     private final AiBreakdownServiceHF aiBreakdownService;
     private final TagRepository tagRepository;
     private final TaskCompletionRepository taskCompletionRepository;
+    private final UserService userService;
+    private final TagService tagService;
 
-    public TaskServiceImpl(TaskRepository taskRepository, SubtaskRepository subtaskRepository,
-                           AiEstimationServiceHF aiEstimationService, AiBreakdownServiceHF aiBreakdownService,
-                           TagRepository tagRepository, TaskCompletionRepository taskCompletionRepository) {
-        this.taskRepository = taskRepository;
-        this.subtaskRepository = subtaskRepository;
-        this.aiEstimationService = aiEstimationService;
-        this.aiBreakdownService = aiBreakdownService;
-        this.tagRepository = tagRepository;
-        this.taskCompletionRepository = taskCompletionRepository;
-    }
 
     @Override
     public List<Task> getAllTasksForUser(Long userId) {
@@ -54,19 +44,17 @@ public class TaskServiceImpl implements TaskService {
 
         return taskRepository.findByUserIdAndArchivedFalse(userId)
                 .stream()
-                .filter(task -> occursOnSafe(task, today))
+                .filter(task -> occursOn(task, today))
                 .filter(task -> !taskCompletionRepository
                         .existsByTaskIdAndDate(task.getId(), today))
                 .toList();
     }
 
-    // Safe occursOn method
-    private boolean occursOnSafe(Task task, LocalDate date) {
+    private boolean occursOn(Task task, LocalDate date) {
         if (task.getStartDate() == null) {
-            return false; // or handle as you need
+            return false;
         }
 
-        // Example: check if the task starts on or before the date
         return !task.getStartDate().isAfter(date);
     }
     @Override
@@ -88,8 +76,44 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public Optional<Task> getTaskById(Long id) {
-        return taskRepository.findById(id);
+    public Task createTask(Long userId, TaskCreateRequest request){
+        User user = userService.getUserById(userId)
+                .orElseThrow(() -> new UserDoesNotExistException(userId));
+
+        Task task = new Task();
+        task.setTitle(request.getTitle());
+        task.setDescription(request.getDescription());
+
+        task.setStartDate(request.getStartDate());
+        task.setStartTime(request.getStartTime());
+        task.setEndTime(request.getEndTime());
+        task.setDueDate(request.getDueDate());
+
+        task.setRecurrenceType(
+                request.getRecurrenceType() != null
+                        ? request.getRecurrenceType()
+                        : RecurrenceType.NONE
+        );
+
+        task.setRecurrenceInterval(
+                request.getRecurrenceInterval() != null
+                        ? request.getRecurrenceInterval()
+                        : 1
+        );
+
+        task.setRecurrenceEnd(request.getRecurrenceEnd());
+        task.setEstimatedMinutes(request.getEstimatedMinutes());
+        task.setUser(user);
+
+        task = saveTask(task);
+
+        if (request.getTagIds() != null) {
+            for (Long tagId : request.getTagIds()) {
+                tagService.addTagToTask(task.getId(), tagId);
+            }
+        }
+
+        return task;
     }
 
     @Override
@@ -103,41 +127,30 @@ public class TaskServiceImpl implements TaskService {
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new TaskDoesNotExistException(id));
 
-        // -------- BASIC FIELDS --------
 
         if (request.getTitle() != null) {
             task.setTitle(request.getTitle());
         }
-
         if (request.getDescription() != null) {
             task.setDescription(request.getDescription());
         }
 
-        // -------- DATE / TIME --------
-        // Updated to match new model
-
         if (request.getStartDate() != null) {
             task.setStartDate(request.getStartDate());
         }
-
         if (request.getDueDate() != null) {
             task.setDueDate(request.getDueDate());
         }
-
         if (request.getStartTime() != null) {
             task.setStartTime(request.getStartTime());
         }
-
         if (request.getEndTime() != null) {
             task.setEndTime(request.getEndTime());
         }
 
-        // -------- RECURRENCE --------
-
         if (request.getRecurrenceType() != null) {
             task.setRecurrenceType(request.getRecurrenceType());
 
-            // Safety default
             if (task.getRecurrenceType() != RecurrenceType.NONE &&
                     task.getRecurrenceInterval() == null) {
                 task.setRecurrenceInterval(1);
@@ -152,7 +165,6 @@ public class TaskServiceImpl implements TaskService {
             task.setRecurrenceEnd(request.getRecurrenceEnd());
         }
 
-        // -------- TAGS --------
 
         if (request.getTagIds() != null) {
             List<Tag> tags = tagRepository.findAllById(request.getTagIds());
@@ -163,32 +175,9 @@ public class TaskServiceImpl implements TaskService {
     }
 
 
-
-    @Override
-    public void completeTask(Long taskId, LocalDate date) {
-
-        if (taskCompletionRepository.existsByTaskIdAndDate(taskId, date)) {
-            return;
-        }
-
-        Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new TaskDoesNotExistException(taskId));
-
-        TaskCompletion completion = new TaskCompletion();
-        completion.setTask(task);
-        completion.setDate(date);
-        completion.setCompletedAt(LocalDateTime.now());
-
-        taskCompletionRepository.save(completion);
-    }
-
-    // ------------------------------------------------------------
-    //   TIME ESTIMATION (NO RECURSIVE NESTING ANYMORE)
-    // ------------------------------------------------------------
-
     public Task estimateTaskTime(Long taskId) {
         Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
+                .orElseThrow(() -> new TaskDoesNotExistException(taskId));
 
         if (!task.getSubtasks().isEmpty()) {
             int sum = task.getSubtasks()
@@ -213,14 +202,9 @@ public class TaskServiceImpl implements TaskService {
         return taskRepository.save(task);
     }
 
-
-    // ------------------------------------------------------------
-    //     BREAKDOWN — ONLY TASKS CAN BE BROKEN DOWN NOW
-    // ------------------------------------------------------------
-
     public Task breakdownTask(Long taskId) {
         Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
+                .orElseThrow(() -> new TaskDoesNotExistException(taskId));
 
         List<Subtask> subtasks = aiBreakdownService.generateSubtasks(task.getTitle(), task.getDescription());
 
@@ -232,22 +216,5 @@ public class TaskServiceImpl implements TaskService {
         return taskRepository.save(task);
     }
 
-    private boolean occursOn(Task task, LocalDate date) {
 
-        if (task.getStartDate().isAfter(date)) return false;
-
-        if (task.getRecurrenceEnd() != null &&
-                date.isAfter(task.getRecurrenceEnd())) return false;
-
-        return switch (task.getRecurrenceType()) {
-            case NONE -> task.getStartDate().equals(date);
-            case DAILY -> true;
-            case WEEKLY ->
-                    ChronoUnit.WEEKS.between(task.getStartDate(), date)
-                            % task.getRecurrenceInterval() == 0;
-            case MONTHLY ->
-                    ChronoUnit.MONTHS.between(task.getStartDate(), date)
-                            % task.getRecurrenceInterval() == 0;
-        };
-    }
 }

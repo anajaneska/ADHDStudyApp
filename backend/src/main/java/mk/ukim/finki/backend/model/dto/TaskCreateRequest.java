@@ -21,9 +21,9 @@ public class TaskCreateRequest {
     private LocalDate dueDate;
 
     // Recurrence
-    private RecurrenceType recurrenceType;   // NONE, DAILY, WEEKLY, MONTHLY
-    private Integer recurrenceInterval;       // e.g. every 2 weeks
-    private LocalDate recurrenceEnd;           // optional
+    private RecurrenceType recurrenceType;
+    private Integer recurrenceInterval;
+    private LocalDate recurrenceEnd;
 
     private Integer estimatedMinutes;
     private List<Long> tagIds;

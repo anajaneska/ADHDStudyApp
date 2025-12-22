@@ -22,30 +22,19 @@ public class ReminderService {
 
     @Transactional
     public void processReminders() {
-        System.out.println("➡️ processReminders() started");
 
         LocalDate today = LocalDate.now();
         LocalDate tomorrow = today.plusDays(1);
 
         List<Task> tasks = taskRepository.findByArchivedFalse();
-        System.out.println("📋 Active tasks count: " + tasks.size());
 
         for (Task task : tasks) {
-
-            System.out.println("🔎 Checking task: " + task.getTitle());
-            System.out.println("   dueDate=" + task.getDueDate());
-            System.out.println("   startDate=" + task.getStartDate());
-            System.out.println("   oneTime=" + task.isOneTime());
-            System.out.println("   completedToday=" + task.isCompletedOn(today));
-
             // Skip repeating tasks already completed today
             if (!task.isOneTime() && task.isCompletedOn(today)) {
                 continue;
             }
 
-            // =========================
             // OVERDUE TASK
-            // =========================
             if (task.isOverdue(today)) {
                 createNotification(
                         task,
@@ -55,9 +44,7 @@ public class ReminderService {
                 continue;
             }
 
-            // =========================
             // UPCOMING DEADLINE
-            // =========================
             if (task.isOneTime()
                     && task.getDueDate() != null
                     && (task.getDueDate().isEqual(today)
@@ -71,10 +58,7 @@ public class ReminderService {
                 continue;
             }
 
-
-            // =========================
-// UPCOMING TASK (30 MIN BEFORE START)
-// =========================
+            // UPCOMING TASK (30 MIN BEFORE START)
             if (task.getStartDate() != null && task.getStartTime() != null) {
 
                 LocalDateTime taskStart = LocalDateTime.of(
@@ -101,18 +85,9 @@ public class ReminderService {
         }
     }
 
-    private void createNotification(
-            Task task,
-            NotificationType type,
-            String message
-    ) {
-
-        boolean alreadyExists =
-                notificationRepository.existsByUserIdAndTypeAndMessageAndSeenFalse(
-                        task.getUser().getId(),
-                        type,
-                        message
-                );
+    private void createNotification(Task task, NotificationType type, String message) {
+        boolean alreadyExists = notificationRepository.existsByUserIdAndTypeAndMessageAndSeenFalse(
+                        task.getUser().getId(), type, message);
 
         if (alreadyExists) return;
 

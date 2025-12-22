@@ -1,5 +1,6 @@
 package mk.ukim.finki.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -27,5 +28,6 @@ public class Notification {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
+    @JsonBackReference("user-notification")
     private User user;
 }

@@ -173,9 +173,6 @@ public class ChatModelServiceHF {
         return mapper.writeValueAsString(quizItems);
     }
 
-
-
-
     public String callChat(String prompt) throws IOException {
         Map<String, Object> body = Map.of(
                 "model", MODEL_NAME,
@@ -204,12 +201,9 @@ public class ChatModelServiceHF {
     }
 
     public String generateEstimation(String prompt) throws IOException {
-        return callChat(prompt); // whatever your wrapper is
+        return callChat(prompt);
     }
 
-    // -----------------------
-    // PARSE JSON ARRAY OR EMPTY
-    // -----------------------
     private JsonNode parseJsonArrayOrEmpty(String json) {
         try {
             JsonNode node = mapper.readTree(json);

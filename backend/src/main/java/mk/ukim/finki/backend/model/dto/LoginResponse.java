@@ -1,18 +1,15 @@
 package mk.ukim.finki.backend.model.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+@AllArgsConstructor
 public class LoginResponse {
     private String token;
     private Long userId;
     private String username;
-
-    public LoginResponse(String token, Long userId, String username) {
-        this.token = token;
-        this.userId = userId;
-        this.username = username;
-    }
-    public Long getUserId() { return userId; }
-    public String getToken() {return token;}
-    public String getUsername() {return username;}
-
 
 }

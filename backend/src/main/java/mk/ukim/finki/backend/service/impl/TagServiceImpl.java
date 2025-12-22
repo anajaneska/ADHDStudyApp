@@ -4,6 +4,9 @@ import lombok.RequiredArgsConstructor;
 import mk.ukim.finki.backend.model.Tag;
 import mk.ukim.finki.backend.model.Task;
 import mk.ukim.finki.backend.model.User;
+import mk.ukim.finki.backend.model.exeptions.TagDoesNotExistException;
+import mk.ukim.finki.backend.model.exeptions.TaskDoesNotExistException;
+import mk.ukim.finki.backend.model.exeptions.UserDoesNotExistException;
 import mk.ukim.finki.backend.repository.TagRepository;
 import mk.ukim.finki.backend.repository.TaskRepository;
 import mk.ukim.finki.backend.repository.UserRepository;
@@ -24,7 +27,7 @@ public class TagServiceImpl implements TagService {
     @Override
     public Tag createTag(Long userId, String name, String color) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserDoesNotExistException(userId));
 
         Tag tag = new Tag();
         tag.setName(name);
@@ -47,9 +50,9 @@ public class TagServiceImpl implements TagService {
     @Override
     public Task addTagToTask(Long taskId, Long tagId) {
         Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
+                .orElseThrow(() -> new TaskDoesNotExistException(taskId));
         Tag tag = tagRepository.findById(tagId)
-                .orElseThrow(() -> new RuntimeException("Tag not found"));
+                .orElseThrow(() -> new TagDoesNotExistException(tagId));
 
         if (!task.getTags().contains(tag)) {
             task.getTags().add(tag);
@@ -60,9 +63,9 @@ public class TagServiceImpl implements TagService {
     @Override
     public Task removeTagFromTask(Long taskId, Long tagId) {
         Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
+                .orElseThrow(() -> new TaskDoesNotExistException(taskId));
         Tag tag = tagRepository.findById(tagId)
-                .orElseThrow(() -> new RuntimeException("Tag not found"));
+                .orElseThrow(() -> new TagDoesNotExistException(tagId));
 
         task.getTags().remove(tag);
         return taskRepository.save(task);

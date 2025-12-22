@@ -9,10 +9,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(
-        name = "task_completions",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"task_id", "date"})
-)
+@Table(name = "task_completions",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"task_id", "date"}))
 @Getter
 @Setter
 public class TaskCompletion {

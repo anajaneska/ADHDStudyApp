@@ -9,6 +9,7 @@ import mk.ukim.finki.backend.model.User;
 import mk.ukim.finki.backend.model.dto.TaskCreateRequest;
 import mk.ukim.finki.backend.model.dto.TaskUpdateRequest;
 import mk.ukim.finki.backend.model.enumerations.RecurrenceType;
+import mk.ukim.finki.backend.model.exeptions.UserDoesNotExistException;
 import mk.ukim.finki.backend.service.TagService;
 import mk.ukim.finki.backend.service.TaskService;
 import mk.ukim.finki.backend.service.UserService;
@@ -26,14 +27,8 @@ import java.util.List;
 public class TaskController {
 
     private final TaskService taskService;
-    private final UserService userService;
-    private final TagService tagService;
     private final TaskCompletionService taskCompletionService;
 
-
-    /* =========================
-       TODO LIST (TODAY)
-       ========================= */
 
     @GetMapping("/today/{userId}")
     public List<Task> getTodayTasks(@PathVariable Long userId) {
@@ -41,69 +36,20 @@ public class TaskController {
     }
 
 
-    /* =========================
-       ORGANIZATION PAGE
-       ========================= */
-
     @GetMapping("/organization/{userId}")
     public List<Task> getOrganizationTasks(@PathVariable Long userId) {
         return taskService.getOrganizationTasksForUser(userId);
     }
 
-    /* =========================
-       CREATE TASK
-       ========================= */
 
     @PostMapping("/{userId}")
     public Task createTask(@PathVariable Long userId, @RequestBody TaskCreateRequest request) {
-        User user = userService.getUserById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        Task task = new Task();
-        task.setTitle(request.getTitle());
-        task.setDescription(request.getDescription());
-
-        task.setStartDate(request.getStartDate());
-        task.setStartTime(request.getStartTime());
-        task.setEndTime(request.getEndTime());
-        task.setDueDate(request.getDueDate());
-
-        task.setRecurrenceType(
-                request.getRecurrenceType() != null
-                        ? request.getRecurrenceType()
-                        : RecurrenceType.NONE
-        );
-
-        task.setRecurrenceInterval(
-                request.getRecurrenceInterval() != null
-                        ? request.getRecurrenceInterval()
-                        : 1
-        );
-
-        task.setRecurrenceEnd(request.getRecurrenceEnd());
-        task.setEstimatedMinutes(request.getEstimatedMinutes());
-        task.setUser(user);
-
-        task = taskService.saveTask(task);
-
-        if (request.getTagIds() != null) {
-            for (Long tagId : request.getTagIds()) {
-                tagService.addTagToTask(task.getId(), tagId);
-            }
-        }
-
-        return task;
+        return taskService.createTask(userId,request);
     }
 
-    /* =========================
-       UPDATE / DELETE
-       ========================= */
 
     @PutMapping("/{id}")
-    public Task updateTask(
-            @PathVariable Long id,
-            @RequestBody TaskUpdateRequest request
-    ) {
+    public Task updateTask(@PathVariable Long id, @RequestBody TaskUpdateRequest request) {
         return taskService.updateTask(id, request);
     }
 
@@ -111,10 +57,6 @@ public class TaskController {
     public void deleteTask(@PathVariable Long id) {
         taskService.deleteTask(id);
     }
-
-    /* =========================
-       AI FEATURES
-       ========================= */
 
     @PostMapping("/{id}/estimate")
     public Task estimateTime(@PathVariable Long id) {

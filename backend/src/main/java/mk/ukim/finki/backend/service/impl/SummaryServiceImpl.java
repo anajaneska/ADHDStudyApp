@@ -4,6 +4,8 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import mk.ukim.finki.backend.model.Document;
 import mk.ukim.finki.backend.model.Summary;
+import mk.ukim.finki.backend.model.exeptions.DocumentDoesNotExistException;
+import mk.ukim.finki.backend.model.exeptions.SummaryDoesNotExistException;
 import mk.ukim.finki.backend.repository.DocumentRepository;
 import mk.ukim.finki.backend.repository.SummaryRepository;
 import mk.ukim.finki.backend.service.AiService;
@@ -26,7 +28,7 @@ public class SummaryServiceImpl implements SummaryService {
     @Override
     public Summary generateAndSaveSummary(Long fileId, Long userId) throws IOException {
         Document document = documentRepository.findByIdAndUserId(fileId, userId)
-                .orElseThrow(() -> new RuntimeException("Document not found"));
+                .orElseThrow(() -> new DocumentDoesNotExistException(fileId));
 
         String text = aiService.extractTextFromDocument(document.getFileUrl());
         String summaryText = chatModelServiceHF.generateSummary(text);
@@ -42,7 +44,7 @@ public class SummaryServiceImpl implements SummaryService {
     @Override
     public Summary getSummary(Long fileId, Long userId) {
         return summaryRepository.findByDocumentIdAndDocumentUserId(fileId, userId)
-                .orElseThrow(() -> new RuntimeException("Summary not found"));
+                .orElseThrow(() -> new SummaryDoesNotExistException(fileId));
     }
     @Override
     @Transactional

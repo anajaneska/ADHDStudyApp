@@ -3,10 +3,9 @@ package mk.ukim.finki.backend.service.impl;
 import lombok.RequiredArgsConstructor;
 import mk.ukim.finki.backend.model.Document;
 import mk.ukim.finki.backend.model.User;
+import mk.ukim.finki.backend.model.exeptions.DocumentDoesNotExistException;
 import mk.ukim.finki.backend.model.exeptions.UserDoesNotExistException;
 import mk.ukim.finki.backend.repository.DocumentRepository;
-import mk.ukim.finki.backend.repository.FlashcardRepository;
-import mk.ukim.finki.backend.repository.SummaryRepository;
 import mk.ukim.finki.backend.repository.UserRepository;
 import mk.ukim.finki.backend.service.FileService;
 import mk.ukim.finki.backend.service.FlashcardService;
@@ -31,7 +30,7 @@ public class FileServiceImpl implements FileService {
     private final SummaryService summaryService;
     private final FlashcardService flashcardService;
 
-    private static final String UPLOAD_DIR = "uploads"; // Folder in project root
+    private static final String UPLOAD_DIR = "uploads";
 
     @Override
     public Document uploadFile(MultipartFile file, Long userId) {
@@ -39,11 +38,9 @@ public class FileServiceImpl implements FileService {
                 .orElseThrow(() -> new UserDoesNotExistException(userId));
 
         try {
-            // Create upload directory if missing
             File uploadDir = new File(UPLOAD_DIR);
             if (!uploadDir.exists()) uploadDir.mkdirs();
 
-            // Create a unique filename
             String originalName = file.getOriginalFilename();
             String fileExtension = "";
             if (originalName != null && originalName.contains(".")) {
@@ -53,13 +50,11 @@ public class FileServiceImpl implements FileService {
             String uniqueFileName = UUID.randomUUID() + fileExtension;
             Path filePath = Paths.get(UPLOAD_DIR, uniqueFileName);
 
-            // Save the file locally
             Files.copy(file.getInputStream(), filePath);
 
-            // Save document info in DB
             Document document = new Document();
             document.setFileName(originalName);
-            document.setFileUrl(filePath.toString()); // Local path
+            document.setFileUrl(filePath.toString());
             document.setUser(user);
 
             return documentRepository.save(document);
@@ -79,7 +74,7 @@ public class FileServiceImpl implements FileService {
         Document file = getUserFiles(userId).stream()
                 .filter(f -> f.getId().equals(fileId))
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("File not found"));
+                .orElseThrow(() -> new DocumentDoesNotExistException(fileId));
 
         summaryService.deleteSummary(fileId);
         flashcardService.deleteFlashcards (fileId);

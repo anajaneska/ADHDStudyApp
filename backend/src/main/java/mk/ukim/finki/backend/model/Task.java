@@ -26,35 +26,22 @@ public class Task {
     private String title;
     private String description;
 
-    // First occurrence date (important for recurrence)
     private LocalDate startDate;
-
-    // Optional due date
     private LocalDate dueDate;
-
     @Column(name = "start_time")
     private LocalTime startTime;
-
     @Column(name = "end_time")
     private LocalTime endTime;
-
     private Integer estimatedMinutes;
 
-    /* =====================
-       RECURRENCE SETTINGS
-       ===================== */
+
     @Enumerated(EnumType.STRING)
-    private RecurrenceType recurrenceType; // NONE, DAILY, WEEKLY, MONTHLY
-
-    private Integer recurrenceInterval; // e.g., every 1 day, every 2 weeks
-
-    private LocalDate recurrenceEnd; // nullable → repeats forever
+    private RecurrenceType recurrenceType;
+    private Integer recurrenceInterval;
+    private LocalDate recurrenceEnd;
 
     private boolean archived = false;
 
-    /* =====================
-       RELATIONS
-       ===================== */
     @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TaskCompletion> completions = new ArrayList<>();
 
@@ -68,50 +55,34 @@ public class Task {
     private User user;
 
     @ManyToMany
-    @JoinTable(
-            name = "task_tags",
-            joinColumns = @JoinColumn(name = "task_id"),
-            inverseJoinColumns = @JoinColumn(name = "tag_id")
-    )
+    @JoinTable(name = "task_tags", joinColumns = @JoinColumn(name = "task_id"), inverseJoinColumns = @JoinColumn(name = "tag_id"))
     private List<Tag> tags = new ArrayList<>();
 
-    /* =====================
-       REMINDER FIELDS
-       ===================== */
+
     private LocalDateTime nextReminderAt;
     private LocalDate lastReminderSentDate;
 
-    /* =====================
-       BUSINESS METHODS
-       ===================== */
 
     public boolean isOneTime() {
         return recurrenceType == RecurrenceType.NONE;
     }
 
     public boolean isCompleted() {
-        // One-time task: completed if it has any completions
         return isOneTime() && !completions.isEmpty();
     }
 
     public boolean isCompletedOn(LocalDate date) {
-        // Repeating task: completed if it has completion for given date
         return completions.stream().anyMatch(c -> c.getDate().equals(date));
     }
 
     public boolean isActiveForToday(LocalDate today) {
-        // Check if task should show up today
         if (isOneTime()) return !isCompleted();
         return !isCompletedOn(today);
     }
 
     public boolean isOverdue(LocalDate today) {
-
-        // ❗ ONLY one-time tasks can be overdue
         if (!isOneTime()) return false;
-
         if (startDate == null) return false;
-
         return startDate.isBefore(today) && !isCompleted();
     }
 

@@ -15,8 +15,6 @@ public class HttpClientHF {
     @Value("${huggingface.api.key}")
     private String apiKey;
 
-    private final ObjectMapper mapper = new ObjectMapper();
-
     public String postJson(String urlString, String jsonPayload) throws IOException {
 
         URL url = new URL(urlString);
