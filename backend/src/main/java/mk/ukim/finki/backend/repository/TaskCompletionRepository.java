@@ -1,5 +1,6 @@
 package mk.ukim.finki.backend.repository;
 
+import mk.ukim.finki.backend.model.Task;
 import mk.ukim.finki.backend.model.TaskCompletion;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -13,4 +14,7 @@ public interface TaskCompletionRepository extends JpaRepository<TaskCompletion, 
     boolean existsByTaskIdAndDate(Long taskId, LocalDate date);
 
     List<TaskCompletion> findByTaskId(Long taskId);
+    boolean existsByTaskAndDate(Task task, LocalDate date);
+
+    List<TaskCompletion> findByTask(Task task);
 }

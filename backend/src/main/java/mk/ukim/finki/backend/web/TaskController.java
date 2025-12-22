@@ -12,6 +12,7 @@ import mk.ukim.finki.backend.model.enumerations.RecurrenceType;
 import mk.ukim.finki.backend.service.TagService;
 import mk.ukim.finki.backend.service.TaskService;
 import mk.ukim.finki.backend.service.UserService;
+import mk.ukim.finki.backend.service.impl.TaskCompletionService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,6 +28,8 @@ public class TaskController {
     private final TaskService taskService;
     private final UserService userService;
     private final TagService tagService;
+    private final TaskCompletionService taskCompletionService;
+
 
     /* =========================
        TODO LIST (TODAY)
@@ -37,13 +40,6 @@ public class TaskController {
         return taskService.getTodayTasksForUser(userId);
     }
 
-    @PostMapping("/{taskId}/complete")
-    public ResponseEntity<Void> completeTask(
-            @PathVariable Long taskId
-    ) {
-        taskService.completeTask(taskId, LocalDate.now());
-        return ResponseEntity.ok().build();
-    }
 
     /* =========================
        ORGANIZATION PAGE
@@ -117,7 +113,7 @@ public class TaskController {
     }
 
     /* =========================
-       AI FEATURES (UNCHANGED)
+       AI FEATURES
        ========================= */
 
     @PostMapping("/{id}/estimate")
@@ -128,5 +124,10 @@ public class TaskController {
     @PostMapping("/{id}/breakdown")
     public Task breakDownTask(@PathVariable Long id) {
         return taskService.breakdownTask(id);
+    }
+
+    @PutMapping("/{id}/complete")
+    public ResponseEntity<Task> completeTask(@PathVariable Long id) {
+        return ResponseEntity.ok(taskCompletionService.completeTask(id));
     }
 }
