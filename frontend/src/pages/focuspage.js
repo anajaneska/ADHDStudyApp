@@ -12,7 +12,7 @@ export default function FocusPage() {
   const fetchTasks = async () => {
     if (!userId) return;
     try {
-      const res = await instance.get(`/tasks/${userId}`, {
+      const res = await instance.get(`/tasks/today/${userId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setTasks(res.data);

@@ -8,8 +8,8 @@ export default function PomodoroSettings({
   breakDuration,
   setWorkDuration,
   setBreakDuration,
-  switchCycle,
   cycle,
+  setTimeLeft
 }) {
   const [tempWork, setTempWork] = useState(workDuration);
   const [tempBreak, setTempBreak] = useState(breakDuration);
@@ -35,11 +35,17 @@ export default function PomodoroSettings({
       );
 
       // Update parent state
-      setWorkDuration(response.data.focusDuration);
-      setBreakDuration(response.data.breakDuration);
+      const newWork = response.data.focusDuration;
+      const newBreak = response.data.breakDuration;
 
-      switchCycle(cycle); // reset timer
-      setEditMode(false);
+setWorkDuration(newWork);
+setBreakDuration(newBreak);
+
+// immediately update display
+setTimeLeft(cycle === "work" ? newWork * 60 : newBreak * 60);
+
+setEditMode(false);
+
     } catch (err) {
       console.error("Error saving settings", err);
     }

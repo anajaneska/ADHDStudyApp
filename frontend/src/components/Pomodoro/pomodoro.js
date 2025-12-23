@@ -6,6 +6,8 @@ import TaskModal from "./taskmodal";
 import { FaCog } from "react-icons/fa";
 import "./pomodoro.css";
 import instance from "../../custom-axios/axios";
+import useSound from "use-sound";
+import ding from "../../assets/sounds/ding.mp3";
 
 export default function PomodoroTimer({ tasks, selectedTask, setSelectedTask }) {
   const token = localStorage.getItem("jwt");
@@ -22,11 +24,17 @@ export default function PomodoroTimer({ tasks, selectedTask, setSelectedTask }) 
   const [loadingSettings, setLoadingSettings] = useState(true);
   const [settingsLoaded, setSettingsLoaded] = useState(false);
 
+  const [playDing] = useSound(ding, { volume: 0.7 });
+
   const storageKey = `pomodoro_${userId}`;
 
-  /** ------------------------------
-   * Load Pomodoro settings from backend (once per session)
-   * ------------------------------ */
+  useEffect(() => {
+  if ("Notification" in window && Notification.permission === "default") {
+    Notification.requestPermission();
+  }
+}, []);
+
+  //Load Pomodoro settings from backend
   useEffect(() => {
     if (!userId || settingsLoaded) return;
 
@@ -51,9 +59,8 @@ export default function PomodoroTimer({ tasks, selectedTask, setSelectedTask }) 
     loadSettings();
   }, [userId, token, settingsLoaded]);
 
-  /** ------------------------------
-   * Load saved localStorage state
-   * ------------------------------ */
+
+  //Load saved localStorage state
   useEffect(() => {
     if (!userId) return;
 
@@ -79,11 +86,10 @@ export default function PomodoroTimer({ tasks, selectedTask, setSelectedTask }) 
     setTimeLeft(newTime);
     setIsRunning(savedRunning);
     setCycle(savedCycle);
-  }, [userId, workDuration]);
+  }, [userId]);
 
-  /** ------------------------------
-   * Save state to localStorage
-   * ------------------------------ */
+
+   //Save state to localStorage
   useEffect(() => {
     if (!userId) return;
 
@@ -99,9 +105,7 @@ export default function PomodoroTimer({ tasks, selectedTask, setSelectedTask }) 
     );
   }, [timeLeft, isRunning, cycle, userId]);
 
-  /** ------------------------------
-   * Timer logic
-   * ------------------------------ */
+  //Timer logic
   useEffect(() => {
     if (timeLeft === null || !isRunning) return;
 
@@ -109,16 +113,29 @@ export default function PomodoroTimer({ tasks, selectedTask, setSelectedTask }) 
       setTimeLeft((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
-          if (cycle === "work") {
-            alert("Време за пауза ☕");
-            setCycle("break");
-            setTimeLeft(breakDuration * 60);
-            setSelectedTask(null);
-          } else {
-            alert("Време за работа 💪");
-            setCycle("work");
-            setTimeLeft(workDuration * 60);
-          }
+          playDing();
+
+if (Notification.permission === "granted") {
+  new Notification(
+    cycle === "work" ? "Време за пауза ☕" : "Време за работа 💪",
+    {
+      body:
+        cycle === "work"
+          ? "Направи кратка пауза"
+          : "Ајде назад на фокус 💪",
+    }
+  );
+}
+
+if (cycle === "work") {
+  setCycle("break");
+  setTimeLeft(breakDuration * 60);
+  setSelectedTask(null);
+} else {
+  setCycle("work");
+  setTimeLeft(workDuration * 60);
+}
+
           return 0;
         }
         return prev - 1;
@@ -169,7 +186,11 @@ export default function PomodoroTimer({ tasks, selectedTask, setSelectedTask }) 
         </button>
       </div>
 
-      <PomodoroDisplay cycle={cycle} timeLeft={timeLeft} selectedTask={selectedTask} />
+      <PomodoroDisplay 
+        cycle={cycle} 
+        timeLeft={timeLeft} 
+        selectedTask={selectedTask} 
+      />
 
       <PomodoroControls
         isRunning={isRunning}
@@ -187,8 +208,8 @@ export default function PomodoroTimer({ tasks, selectedTask, setSelectedTask }) 
         breakDuration={breakDuration}
         setWorkDuration={setWorkDuration}
         setBreakDuration={setBreakDuration}
-        switchCycle={switchCycle}
         cycle={cycle}
+        setTimeLeft={setTimeLeft}
       />
 
       {showTaskModal && cycle === "work" && (
