@@ -18,6 +18,9 @@ export default function TaskItem({
   const [isEditing, setIsEditing] = useState(false);
   const [showSubtasks, setShowSubtasks] = useState(false);
 
+  const isCompleted = task.completedToday === true;
+
+
   const [editData, setEditData] = useState({
     title: task.title,
     description: task.description || "",
@@ -37,7 +40,7 @@ export default function TaskItem({
   };
 
   return (
-    <li className={`task-item ${task.completed ? "completed" : ""}`}>
+    <li className={`task-item ${isCompleted ? "completed" : ""}`}>
       {isEditing ? (
         <div className="edit-form flex flex-col gap-2 p-2 border rounded">
           <input
@@ -125,7 +128,7 @@ export default function TaskItem({
               {!focusedTaskId && (
                 <input
                   type="checkbox"
-                  checked={task.completed}
+                  checked={isCompleted}
                   onChange={() => toggleComplete(task.id)}
                 />
               )}

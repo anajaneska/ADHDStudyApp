@@ -4,6 +4,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import mk.ukim.finki.backend.model.Task;
 import mk.ukim.finki.backend.model.TaskCompletion;
+import mk.ukim.finki.backend.model.dto.TaskDTO;
 import mk.ukim.finki.backend.repository.TaskCompletionRepository;
 import mk.ukim.finki.backend.repository.TaskRepository;
 import org.springframework.stereotype.Service;
@@ -19,33 +20,27 @@ public class TaskCompletionService {
     private final TaskCompletionRepository completionRepository;
 
     @Transactional
-    public Task completeTask(Long taskId) {
-        Task task = taskRepository.findById(taskId)
-                .orElseThrow();
-
+    public Task toggleCompletion(Long taskId) {
+        Task task = taskRepository.findById(taskId).orElseThrow();
         LocalDate today = LocalDate.now();
 
-        // ONE-TIME TASK → completed forever
-        if (task.isOneTime()) {
-            if (task.isArchived()) {
-                return task;
-            }
+        TaskCompletion completion = completionRepository
+                .findByTaskAndDate(task, today)
+                .orElseGet(() -> {
+                    TaskCompletion tc = new TaskCompletion();
+                    tc.setTask(task);
+                    tc.setDate(today);
+                    tc.setCompleted(false);
+                    return tc;
+                });
 
-            task.setArchived(true);
-            task.setNextReminderAt(null);
-            return taskRepository.save(task);
-        }
+        // TOGGLE
+        completion.setCompleted(!completion.isCompleted());
+        completion.setCompletedAt(
+                completion.isCompleted() ? LocalDateTime.now() : null
+        );
 
-        // REPEATING TASK → completed ONLY for today
-        if (!completionRepository.existsByTaskAndDate(task, today)) {
-            TaskCompletion completion = new TaskCompletion();
-            completion.setTask(task);
-            completion.setDate(today);
-            completion.setCompletedAt(LocalDateTime.now());
-            completionRepository.save(completion);
-        }
-
-        task.setNextReminderAt(null);
+        completionRepository.save(completion);
         return task;
     }
 }

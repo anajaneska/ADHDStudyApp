@@ -9,8 +9,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "task_completions",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"task_id", "date"}))
+@Table(
+        name = "task_completions",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"task_id", "date"})
+)
 @Getter
 @Setter
 public class TaskCompletion {
@@ -19,12 +21,16 @@ public class TaskCompletion {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "task_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "task_id", nullable = false)
     @JsonIgnore
     private Task task;
 
+    @Column(nullable = false)
     private LocalDate date;
+
+    @Column(nullable = false)
+    private boolean completed;
 
     private LocalDateTime completedAt;
 }

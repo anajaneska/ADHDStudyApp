@@ -7,6 +7,7 @@ import mk.ukim.finki.backend.model.Tag;
 import mk.ukim.finki.backend.model.Task;
 import mk.ukim.finki.backend.model.User;
 import mk.ukim.finki.backend.model.dto.TaskCreateRequest;
+import mk.ukim.finki.backend.model.dto.TaskDTO;
 import mk.ukim.finki.backend.model.dto.TaskUpdateRequest;
 import mk.ukim.finki.backend.model.enumerations.RecurrenceType;
 import mk.ukim.finki.backend.model.exeptions.UserDoesNotExistException;
@@ -31,8 +32,11 @@ public class TaskController {
 
 
     @GetMapping("/today/{userId}")
-    public List<Task> getTodayTasks(@PathVariable Long userId) {
-        return taskService.getTodayTasksForUser(userId);
+    public List<TaskDTO> getTodayTasks(@PathVariable Long userId) {
+        return taskService.getTodayTasksForUser(userId)
+                .stream()
+                .map(TaskDTO::from)
+                .toList();
     }
 
 
@@ -41,12 +45,10 @@ public class TaskController {
         return taskService.getOrganizationTasksForUser(userId);
     }
 
-
     @PostMapping("/{userId}")
     public Task createTask(@PathVariable Long userId, @RequestBody TaskCreateRequest request) {
         return taskService.createTask(userId,request);
     }
-
 
     @PutMapping("/{id}")
     public Task updateTask(@PathVariable Long id, @RequestBody TaskUpdateRequest request) {
@@ -69,7 +71,8 @@ public class TaskController {
     }
 
     @PutMapping("/{id}/complete")
-    public ResponseEntity<Task> completeTask(@PathVariable Long id) {
-        return ResponseEntity.ok(taskCompletionService.completeTask(id));
+    public ResponseEntity<TaskDTO> completeTask(@PathVariable Long id) {
+        Task task = taskCompletionService.toggleCompletion(id);
+        return ResponseEntity.ok(TaskDTO.from(task));
     }
 }

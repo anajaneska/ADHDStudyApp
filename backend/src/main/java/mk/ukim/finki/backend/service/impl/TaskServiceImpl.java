@@ -41,14 +41,12 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public List<Task> getTodayTasksForUser(Long userId) {
         LocalDate today = LocalDate.now();
-
         return taskRepository.findByUserIdAndArchivedFalse(userId)
                 .stream()
                 .filter(task -> occursOn(task, today))
-                .filter(task -> !taskCompletionRepository
-                        .existsByTaskIdAndDate(task.getId(), today))
                 .toList();
     }
+
 
     private boolean occursOn(Task task, LocalDate date) {
         if (task.getStartDate() == null) {
@@ -84,7 +82,12 @@ public class TaskServiceImpl implements TaskService {
         task.setTitle(request.getTitle());
         task.setDescription(request.getDescription());
 
-        task.setStartDate(request.getStartDate());
+        task.setStartDate(
+                request.getStartDate() != null
+                ? request.getStartDate()
+                : LocalDate.now()
+        );
+
         task.setStartTime(request.getStartTime());
         task.setEndTime(request.getEndTime());
         task.setDueDate(request.getDueDate());
@@ -215,6 +218,5 @@ public class TaskServiceImpl implements TaskService {
         task.getSubtasks().addAll(subtasks);
         return taskRepository.save(task);
     }
-
 
 }

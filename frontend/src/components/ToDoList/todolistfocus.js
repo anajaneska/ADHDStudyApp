@@ -154,6 +154,23 @@ export default function ToDoList({ focusedTaskId }) {
     );
   }
 
+  // SORT TASKS: incomplete first, then by startDate + startTime
+filteredTasksArray.sort((a, b) => {
+  if (a.completedToday && !b.completedToday) return 1;
+  if (!a.completedToday && b.completedToday) return -1;
+
+  if (a.startDate && b.startDate) {
+    const dateA = new Date(`${a.startDate}T${a.startTime || "00:00"}`);
+    const dateB = new Date(`${b.startDate}T${b.startTime || "00:00"}`);
+    return dateA - dateB;
+  }
+  if (a.startDate && !b.startDate) return -1;
+  if (!a.startDate && b.startDate) return 1;
+
+  return a.title.localeCompare(b.title);
+});
+
+
   return (
     <div className="todo-container">
       {!focusedTaskId && (
