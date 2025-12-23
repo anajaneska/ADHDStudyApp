@@ -98,7 +98,7 @@ export default function CalendarView() {
     setLoading(true);
     setError("");
     try {
-      const res = await instance.get(`/tasks/organization/${userId}`, {
+      const res = await instance.get(`/tasks/all/${userId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setTasks(Array.isArray(res.data) ? res.data : []);
@@ -198,15 +198,23 @@ export default function CalendarView() {
           messages={messagesMk}
           culture="mk-MK"
           style={{ height: "100%" }}
-          eventPropGetter={(event) => ({
-            style: {
-              backgroundColor: event.color,
-              color: "white",
-              borderRadius: "6px",
-              border: "none",
-              padding: "2px 6px",
-            },
-          })}
+          eventPropGetter={(event) => {
+              const t = tasks.find(t => t.id === event.taskId);
+              const isArchived = t?.archived;
+
+              return {
+                style: {
+                  backgroundColor: event.color,
+                  color: "white",
+                  borderRadius: "6px",
+                  border: "none",
+                  padding: "2px 6px",
+                  textDecoration: isArchived ? "line-through" : "none",
+                  opacity: isArchived ? 0.6 : 1, // optional: dim archived tasks
+                },
+              };
+            }}
+
         />
       )}
 

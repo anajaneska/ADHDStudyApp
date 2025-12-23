@@ -61,10 +61,7 @@ public class TaskServiceImpl implements TaskService {
 
         return taskRepository.findByUserIdAndArchivedFalse(userId)
                 .stream()
-                .filter(task ->
-                        task.getRecurrenceType() != RecurrenceType.NONE ||
-                                task.getStartDate().isAfter(today)
-                )
+                .filter(task -> occursOn(task, today) || task.getRecurrenceType() != RecurrenceType.NONE)
                 .toList();
     }
 

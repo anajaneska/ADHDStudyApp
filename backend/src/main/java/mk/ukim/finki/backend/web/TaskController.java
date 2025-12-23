@@ -30,6 +30,11 @@ public class TaskController {
     private final TaskService taskService;
     private final TaskCompletionService taskCompletionService;
 
+    @GetMapping("/all/{userId}")
+    public List<Task> getAllTasks(@PathVariable Long userId){
+        return taskService.getAllTasksForUser(userId);
+    }
+
 
     @GetMapping("/today/{userId}")
     public List<TaskDTO> getTodayTasks(@PathVariable Long userId) {
