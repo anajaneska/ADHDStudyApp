@@ -9,14 +9,13 @@ export default function PomodoroSettings({
   setWorkDuration,
   setBreakDuration,
   cycle,
-  setTimeLeft
+  setTimeLeft,
 }) {
   const [tempWork, setTempWork] = useState(workDuration);
   const [tempBreak, setTempBreak] = useState(breakDuration);
   const userId = localStorage.getItem("userId");
   const token = localStorage.getItem("jwt");
 
-  // Reset modal inputs whenever it opens
   useEffect(() => {
     if (editMode) {
       setTempWork(workDuration);
@@ -34,18 +33,14 @@ export default function PomodoroSettings({
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      // Update parent state
       const newWork = response.data.focusDuration;
       const newBreak = response.data.breakDuration;
 
-setWorkDuration(newWork);
-setBreakDuration(newBreak);
+      setWorkDuration(newWork);
+      setBreakDuration(newBreak);
+      setTimeLeft(cycle === "work" ? newWork * 60 : newBreak * 60);
 
-// immediately update display
-setTimeLeft(cycle === "work" ? newWork * 60 : newBreak * 60);
-
-setEditMode(false);
-
+      setEditMode(false);
     } catch (err) {
       console.error("Error saving settings", err);
     }
@@ -55,56 +50,67 @@ setEditMode(false);
 
   return (
     <>
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-black bg-opacity-30 z-40"
-        onClick={() => setEditMode(false)}
-      />
+      {/* Bootstrap Modal */}
+      <div className="modal show d-block" tabIndex="-1" role="dialog">
+        <div className="modal-dialog modal-dialog-centered" role="document">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title">Промени Траење на Тајмерот</h5>
+              <button
+                type="button"
+                className="btn-close"
+                aria-label="Close"
+                onClick={() => setEditMode(false)}
+              ></button>
+            </div>
 
-      {/* Modal content */}
-      <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2
-                      bg-white rounded-xl shadow-lg p-6 z-50 w-80">
-        <h3 className="text-lg font-semibold mb-4">Промени Траење на Тајмерот</h3>
+            <div className="modal-body">
+              <div className="mb-3">
+                <label className="form-label">Траење на Фокус (минути)</label>
+                <input
+                  type="number"
+                  min="1"
+                  value={tempWork}
+                  onChange={(e) => setTempWork(parseInt(e.target.value) || 1)}
+                  className="form-control"
+                />
+              </div>
 
-        <div className="space-y-4">
-          <div>
-            <label className="block mb-1">Траење на Фокус (минути)</label>
-            <input
-              type="number"
-              min="1"
-              value={tempWork}
-              onChange={(e) => setTempWork(parseInt(e.target.value) || 1)}
-              className="w-full border px-2 py-1 rounded"
-            />
+              <div className="mb-3">
+                <label className="form-label">Траење на пауза (минути)</label>
+                <input
+                  type="number"
+                  min="1"
+                  value={tempBreak}
+                  onChange={(e) => setTempBreak(parseInt(e.target.value) || 1)}
+                  className="form-control"
+                />
+              </div>
+            </div>
+
+            <div className="modal-footer">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => setEditMode(false)}
+              >
+                Откажи
+              </button>
+              <button
+                type="button"
+                className="btn"
+                style={{ backgroundColor: "#8b7fc7", color: "white" }}
+                onClick={saveSettings}
+              >
+                Зачувај
+              </button>
+            </div>
           </div>
-
-          <div>
-            <label className="block mb-1">Траење на пауза (минути)</label>
-            <input
-              type="number"
-              min="1"
-              value={tempBreak}
-              onChange={(e) => setTempBreak(parseInt(e.target.value) || 1)}
-              className="w-full border px-2 py-1 rounded"
-            />
-          </div>
-        </div>
-
-        <div className="flex justify-end gap-2 mt-4">
-          <button
-            className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
-            onClick={() => setEditMode(false)}
-          >
-            Откажи
-          </button>
-          <button
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-            onClick={saveSettings}
-          >
-            Зачувај
-          </button>
         </div>
       </div>
+
+      {/* Backdrop */}
+      <div className="modal-backdrop fade show" onClick={() => setEditMode(false)}></div>
     </>
   );
 }

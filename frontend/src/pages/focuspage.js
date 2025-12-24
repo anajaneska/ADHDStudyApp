@@ -26,31 +26,28 @@ export default function FocusPage() {
   }, []);
 
   return (
-  <div className="min-h-screen flex justify-center items-start pt-32 px-8">
-    <div className="flex flex-row justify-center items-start gap-12 max-w-[1400px] w-full">
-
-      {/* Pomodoro */}
-<div className="flex-1 max-w-[520px] min-h-[650px]">
-  <div className="h-full">
-    <PomodoroTimer
-      tasks={tasks}
-      selectedTask={selectedTask}
-      setSelectedTask={setSelectedTask}
-    />
-  </div>
-</div>
-
-{/* To-Do */}
-<div className="flex-1 max-w-[520px] min-h-[650px]">
-  <div className="h-full">
-    <ToDoList
-      fetchTasks={fetchTasks}
-      focusedTaskId={selectedTask?.id}
-    />
-  </div>
-</div>
-
+<div className="container-fluid pt-5 px-3">
+  <div className="row justify-content-center g-4" style={{ maxWidth: "1400px", margin: "0 auto" }}>
+    
+    {/* Pomodoro - left column */}
+    <div className="col-12 col-md-6 col-lg-5">
+      <PomodoroTimer
+        tasks={tasks}
+        selectedTask={selectedTask}
+        setSelectedTask={setSelectedTask}
+      />
     </div>
+
+    {/* To-Do - right column */}
+    <div className="col-12 col-md-6 col-lg-5">
+      <ToDoList
+        fetchTasks={fetchTasks}
+        focusedTaskId={selectedTask?.id}
+      />
+    </div>
+
   </div>
+</div>
+
 );
 }

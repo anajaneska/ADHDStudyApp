@@ -1,5 +1,3 @@
-import React from "react";
-
 export default function PomodoroControls({
   isRunning,
   setIsRunning,
@@ -7,18 +5,18 @@ export default function PomodoroControls({
   setShowTaskModal,
 }) {
   return (
-    <div className="pomodoro-controls">
+    <div className="d-flex justify-content-center gap-3 mt-4">
       <button
-        className={`btn ${isRunning ? "btn-pause" : "btn-start"}`}
+        className={`btn start-btn ${isRunning ? "btn-stop" : "btn-start"}`}
         onClick={() => {
           if (!isRunning) setShowTaskModal(true);
           else setIsRunning(false);
         }}
       >
-        {isRunning ? "Пауза" : "Старт"}
+        {isRunning ? "Стоп" : "Старт"}
       </button>
 
-      <button className="btn btn-reset" onClick={resetTimer}>
+      <button className="btn btn-secondary" onClick={resetTimer}>
         Ресетирај
       </button>
     </div>

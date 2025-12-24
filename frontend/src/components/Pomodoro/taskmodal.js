@@ -1,72 +1,42 @@
 import React from "react";
+import { Modal, Button } from "react-bootstrap";
+import 'bootstrap/dist/css/bootstrap.min.css';
 
-export default function TaskModal({
-  tasks,
-  setShowTaskModal,
-  setSelectedTask,
-  setIsRunning,
-}) {
+
+export default function TaskModal({ tasks, setSelectedTask, setShowTaskModal, setIsRunning }) {
   return (
-    <div
-      className="modal-overlay"
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        width: "100vw",
-        height: "100vh",
-        backgroundColor: "rgba(0,0,0,0.4)",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        zIndex: 9999,
-      }}
+    <Modal
+      show={true}
+      onHide={() => setShowTaskModal(false)}
+      centered
+      size="sm"
     >
-      <div
-        className="modal-content"
-        style={{
-          backgroundColor: "#fff",
-          padding: "20px",
-          borderRadius: "12px",
-          width: "90%",
-          maxWidth: "500px",
-          boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
-          position: "relative",
-        }}
-      >
-        <h3>Избери задача за фокус</h3>
-        <ul>
+      <Modal.Header closeButton>
+        <Modal.Title>Избери задача за фокус</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <div className="d-flex flex-column gap-2">
           {tasks.map((t) => (
-            <li key={t.id} style={{ marginBottom: "8px" }}>
-              <button
-                onClick={() => {
-                  setSelectedTask(t);
-                  setShowTaskModal(false);
-                  setIsRunning(true);
-                }}
-                style={{
-                  width: "100%",
-                  padding: "8px 12px",
-                  borderRadius: "6px",
-                  border: "1px solid #ccc",
-                  background: "#f0f0f0",
-                  cursor: "pointer",
-                }}
-              >
-                {t.title}
-              </button>
-            </li>
+            <Button
+              key={t.id}
+              variant="outline-secondary"
+              className="text-start"
+              onClick={() => {
+                setSelectedTask(t);
+                setShowTaskModal(false);
+                setIsRunning(true);
+              }}
+            >
+              {t.title}
+            </Button>
           ))}
-        </ul>
-        <div style={{ marginTop: "12px", textAlign: "right" }}>
-          <button
-            className="btn-secondary"
-            onClick={() => setShowTaskModal(false)}
-          >
-            Откажи
-          </button>
         </div>
-      </div>
-    </div>
+      </Modal.Body>
+      <Modal.Footer>
+        <Button variant="secondary" onClick={() => setShowTaskModal(false)}>
+          Откажи
+        </Button>
+      </Modal.Footer>
+    </Modal>
   );
 }

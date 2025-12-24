@@ -1,139 +1,25 @@
-/* --- General Layout --- */
-.header {
-  width: 100%;
-  background-color: rgba(255, 255, 255, 0.8);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 50;
-  transition: background-color 0.3s ease;
+/* Desktop & above */
+@media (min-width: 768px) {
+  .nav-link.active-link {
+    color: #ffffff !important;
+    background-color: #8b7fc7;
+    border-radius: 10px;
+  }
+
+  .nav-link.active-link:hover {
+    color: #ffffff !important;
+    background-color: #5a5091ff;
+    border-radius: 10px;
+  }
 }
 
-.header-container {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 0 1.5rem;
-}
-
-.header-inner {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  height: 70px;
-}
-
-/* --- Left side: App Name + Navigation --- */
-.left-section {
-  display: flex;
-  align-items: center;
-  gap: 2rem;
-}
-
-/* --- App Title --- */
-.app-name {
-  font-size: 1.8rem;
-  font-weight: 700;
-  letter-spacing: 1px;
-  color: rgba(74, 85, 101, 1);
-}
-
-/* --- Navigation Links --- */
-.nav-links {
-  display: flex;
-  gap: 1.5rem;
-}
-
-.nav-link {
-  display: flex;          /* Make link a flex container */
-  align-items: center;    /* Vertically center icon and text */
-  gap: 6px;               /* Space between icon and text */
-  color: rgba(74, 85, 101, 1);
-  text-decoration: none;
-  font-size: 1.1rem;
-  padding: 6px 10px;
-  border-radius: 8px;
-  transition: background-color 0.3s, color 0.3s, transform 0.2s;
-}
-
+/* All screens */
 .nav-link:hover {
-  background-color: rgba(211, 221, 221, 0.6);
-  color: black;
-  transform: translateY(-2px);
+  background-color: rgba(139,127,199,0.1);
+  border-radius: 10px;
 }
 
-/* --- Active Link --- */
-.active-link {
-  background-color: rgba(139, 127, 199, 1);
-  color: rgba(255, 255, 255, 1);
-  font-weight: 600;
-}
-
-/* --- Right side: Login/Register/Logout --- */
-.auth-section {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.auth-link {
-  font-size: 1.1rem;
-}
-
-/* --- Logout Button --- */
-.logout-btn {
-  background-color: rgba(139, 127, 199, 1);
-  color: white;
-  padding: 6px 12px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: background-color 0.3s ease;
-}
-
-.logout-btn:hover {
-  background-color: #6c63b5;
-}
-
-/* --- Fonts & General Styling --- */
-.header,
-.nav-link,
-.app-name {
-  font-family: "Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-  letter-spacing: 0.3px;
-}
-
-/* --- Mobile Design --- */
-@media (max-width: 768px) {
-  .header-inner {
-    flex-direction: column;
-    gap: 10px;
-    height: auto;
-    padding: 10px 0;
-  }
-
-  .left-section {
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .nav-links {
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 0.8rem;
-  }
-
-  .app-name {
-    font-size: 1.5rem;
-  }
-
-  .nav-link {
-    font-size: 1rem;
-    padding: 4px 8px;
-  }
-
-  .auth-section {
-    gap: 0.8rem;
-  }
+.btn-outline:hover {
+  color: #ffffff !important;
+  background-color: #8b7fc7 !important;
 }

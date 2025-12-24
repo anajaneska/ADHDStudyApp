@@ -5,7 +5,7 @@ export default function SubtaskItem({ subtask, reloadTask, token }) {
   const [loading, setLoading] = useState(false);
 
 
-  return (
+return (
     <div className="subtask-box" style={{ marginLeft: "20px", marginTop: "5px" }}>
       <div className="subtask-header">
         <strong>{subtask.title}</strong>
@@ -14,8 +14,6 @@ export default function SubtaskItem({ subtask, reloadTask, token }) {
       {subtask.description && (
         <p className="subtask-desc">{subtask.description}</p>
       )}
-
-
     </div>
   );
 }

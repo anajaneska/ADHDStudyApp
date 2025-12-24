@@ -8,6 +8,8 @@ import "./pomodoro.css";
 import instance from "../../custom-axios/axios";
 import useSound from "use-sound";
 import ding from "../../assets/sounds/ding.mp3";
+import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap/dist/js/bootstrap.bundle.min.js";
 
 export default function PomodoroTimer({ tasks, selectedTask, setSelectedTask }) {
   const token = localStorage.getItem("jwt");
@@ -163,67 +165,75 @@ if (cycle === "work") {
   if (loadingSettings) return <div className="loading">Loading settings...</div>;
 
   return (
-    <div className="pomodoro-container">
-      <div className="pomodoro-header">
-        <h2 className="pomodoro-title">Помодоро тајмер</h2>
-        <div className="settings-gear" onClick={() => setEditMode(true)}>
-          <FaCog size={24} />
-        </div>
+<div className="container my-4">
+  <div className="shadow-lg rounded-4 p-4 bg-white" style={{ minHeight: "450px" }}>
+    {/* Header: title + gear */}
+    <div className="d-flex justify-content-between align-items-center mb-3">
+      <h2 className="text-purple">Помодоро тајмер</h2>
+      <div className="settings-gear" onClick={() => setEditMode(true)}>
+        <FaCog size={24} className="text-secondary" />
       </div>
-
-      <div className="cycle-switch-top">
-        <button
-          className={`btn ${cycle === "work" ? "btn-active" : ""}`}
-          onClick={() => switchCycle("work")}
-        >
-          Фокус ({workDuration})
-        </button>
-        <button
-          className={`btn ${cycle === "break" ? "btn-active" : ""}`}
-          onClick={() => switchCycle("break")}
-        >
-          Пауза ({breakDuration})
-        </button>
-      </div>
-
-      <PomodoroDisplay 
-        cycle={cycle} 
-        timeLeft={timeLeft} 
-        selectedTask={selectedTask} 
-      />
-
-      <PomodoroControls
-        isRunning={isRunning}
-        setIsRunning={setIsRunning}
-        resetTimer={resetTimer}
-        cycle={cycle}
-        selectedTask={selectedTask}
-        setShowTaskModal={setShowTaskModal}
-      />
-
-      <PomodoroSettings
-        editMode={editMode}
-        setEditMode={setEditMode}
-        workDuration={workDuration}
-        breakDuration={breakDuration}
-        setWorkDuration={setWorkDuration}
-        setBreakDuration={setBreakDuration}
-        cycle={cycle}
-        setTimeLeft={setTimeLeft}
-      />
-
-      {showTaskModal && cycle === "work" && (
-        <TaskModal
-          tasks={tasks}
-          setShowTaskModal={setShowTaskModal}
-          setSelectedTask={(task) => {
-            setSelectedTask(task);
-            setShowTaskModal(false);
-            setIsRunning(true);
-          }}
-          setIsRunning={setIsRunning}
-        />
-      )}
     </div>
+
+    {/* Cycle switch buttons */}
+    <div className="d-flex justify-content-center gap-2 mb-3 flex-wrap">
+      <button
+        className={`btn ${cycle === "work" ? "btn-purple" : "btn-outline-purple"}`}
+        onClick={() => switchCycle("work")}
+      >
+        Фокус ({workDuration})
+      </button>
+      <button
+        className={`btn ${cycle === "break" ? "btn-purple" : "btn-outline-purple"}`}
+        onClick={() => switchCycle("break")}
+      >
+        Пауза ({breakDuration})
+      </button>
+    </div>
+
+    {/* Timer display */}
+    <PomodoroDisplay 
+      cycle={cycle} 
+      timeLeft={timeLeft} 
+      selectedTask={selectedTask} 
+    />
+
+    <PomodoroControls
+      isRunning={isRunning}
+      setIsRunning={setIsRunning}
+      resetTimer={resetTimer}
+      cycle={cycle}
+      selectedTask={selectedTask}
+      setShowTaskModal={setShowTaskModal}
+    />
+
+    {/* Settings modal */}
+    <PomodoroSettings
+      editMode={editMode}
+      setEditMode={setEditMode}
+      workDuration={workDuration}
+      breakDuration={breakDuration}
+      setWorkDuration={setWorkDuration}
+      setBreakDuration={setBreakDuration}
+      cycle={cycle}
+      setTimeLeft={setTimeLeft}
+    />
+
+    {/* Task modal */}
+    {showTaskModal && cycle === "work" && (
+      <TaskModal
+        tasks={tasks}
+        setShowTaskModal={setShowTaskModal}
+        setSelectedTask={(task) => {
+          setSelectedTask(task);
+          setShowTaskModal(false);
+          setIsRunning(true);
+        }}
+        setIsRunning={setIsRunning}
+      />
+    )}
+  </div>
+</div>
+
   );
 }
