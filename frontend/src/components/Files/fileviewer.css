@@ -1,0 +1,26 @@
+.file-tabs {
+  background: #f4f5f7;
+  padding: 6px;
+  border-radius: 14px;
+  width: fit-content;
+}
+
+.file-tab-btn {
+  border: none;
+  background: transparent;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-weight: 500;
+  color: #555;
+  transition: all 0.2s ease;
+}
+
+.file-tab-btn:hover {
+  background: #e6e8ee;
+}
+
+.file-tab-btn.active {
+  background: rgba(139, 127, 199, 1);
+  color: white;
+  box-shadow: 0 4px 10px rgba(139, 127, 199, 0.35);
+}

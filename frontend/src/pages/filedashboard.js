@@ -83,23 +83,8 @@ export default function FileDashboard() {
       {/* SIDEBAR */}
       <div className="col-12 col-md-4 col-lg-3 border-end bg-white d-flex flex-column p-3 overflow-auto">
 
-        <button
-          className="btn text-white mb-3 shadow"
-          style={{
-            backgroundColor: "rgba(139, 127, 199, 1)",
-            borderRadius: "12px",
-          }}
-          onClick={() => fileInputRef.current.click()}
-        >
-          Прикачи датотека
-        </button>
-
-        <input
-          type="file"
-          ref={fileInputRef}
-          className="d-none"
-          onChange={handleFileUpload}
-        />
+      {/* Spacer to preserve layout height */}
+<div style={{ height: "48px" }} className="mb-3" />
 
         <FileSidebar
           files={files}

@@ -28,6 +28,6 @@ public class Notification {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    @JsonBackReference("user-notification")
+    @JsonBackReference("user-notifications")
     private User user;
 }
