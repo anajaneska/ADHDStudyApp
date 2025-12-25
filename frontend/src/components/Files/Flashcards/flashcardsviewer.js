@@ -1,40 +1,25 @@
 import React, { useState, useEffect } from "react";
 import instance from "../../../custom-axios/axios";
+import { FaTrash } from "react-icons/fa";
 
 export default function FlashcardsViewer({ file }) {
-  /* ----------------------------- State ----------------------------- */
-
   const [flashcards, setFlashcards] = useState([]);
   const [loading, setLoading] = useState(false);
-
-  // Is the card flipped (question ↔ answer)
   const [flipped, setFlipped] = useState(false);
-
-  // Which flashcard is currently shown
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const userId = localStorage.getItem("userId");
 
-  /* ------------------------ Fetch flashcards ------------------------ */
-
   const fetchFlashcards = async () => {
     setLoading(true);
     try {
-      const res = await instance.get(
-        `/files/${userId}/${file.id}/flashcards`
-      );
-
-      // Backend stores flashcards as JSON string
+      const res = await instance.get(`/files/${userId}/${file.id}/flashcards`);
       let data = [];
       try {
-        data = res.data.flashcardData
-          ? JSON.parse(res.data.flashcardData)
-          : [];
+        data = res.data.flashcardData ? JSON.parse(res.data.flashcardData) : [];
       } catch {
-        // Fallback if response is not valid JSON
         data = [{ question: res.data.flashcardData, answer: "" }];
       }
-
       setFlashcards(data);
     } catch (err) {
       console.error("Error fetching flashcards:", err);
@@ -50,24 +35,16 @@ export default function FlashcardsViewer({ file }) {
     fetchFlashcards();
   }, [file, userId]);
 
-  /* ---------------------- Generate flashcards ----------------------- */
-
   const generateFlashcards = async () => {
     setLoading(true);
     try {
-      const res = await instance.post(
-        `/files/${userId}/${file.id}/flashcards`
-      );
-
+      const res = await instance.post(`/files/${userId}/${file.id}/flashcards`);
       let data = [];
       try {
-        data = res.data.flashcardData
-          ? JSON.parse(res.data.flashcardData)
-          : [];
+        data = res.data.flashcardData ? JSON.parse(res.data.flashcardData) : [];
       } catch {
         data = [{ question: res.data.flashcardData, answer: "" }];
       }
-
       setFlashcards(data);
     } catch (err) {
       console.error("Error generating flashcards:", err);
@@ -77,8 +54,6 @@ export default function FlashcardsViewer({ file }) {
       setFlipped(false);
     }
   };
-
-  /* ----------------------- Delete flashcards ------------------------ */
 
   const deleteFlashcards = async () => {
     if (!window.confirm("Дали сте сигурни дека сакате да ги избришете картичките?"))
@@ -97,103 +72,74 @@ export default function FlashcardsViewer({ file }) {
     }
   };
 
-  /* ----------------------- Navigation logic ------------------------- */
-
   const nextCard = () => {
     setCurrentIndex((prev) => (prev + 1) % flashcards.length);
     setFlipped(false);
   };
 
   const prevCard = () => {
-    setCurrentIndex(
-      (prev) => (prev - 1 + flashcards.length) % flashcards.length
-    );
+    setCurrentIndex((prev) => (prev - 1 + flashcards.length) % flashcards.length);
     setFlipped(false);
   };
 
   const toggleFlip = () => setFlipped((f) => !f);
 
-  /* ---------------------------- Render ------------------------------ */
-
-  if (loading) {
-    return <p className="text-gray-500">Loading...</p>;
-  }
+  if (loading) return <p className="text-center text-muted mt-3">Loading...</p>;
 
   return (
-    <div className="flex flex-col items-center relative">
-
-      {/* No flashcards yet → generate button */}
+    <div className="d-flex flex-column align-items-center position-relative">
       {!flashcards.length && (
         <button
           onClick={generateFlashcards}
-          className="bg-green-500 text-white px-5 py-2 rounded-lg hover:bg-green-600 transition"
+          className="btn btn-success mb-3"
         >
           Генерирај Картички за Учење
         </button>
       )}
 
       {flashcards.length > 0 && (
-        <>
-          {/* ---------------- Delete icon (top-right) ---------------- */}
+        <div className="w-100">
+          {/* Delete icon */}
           <button
             onClick={deleteFlashcards}
             title="Избриши картички"
-            className="absolute top-0 right-0 text-gray-400 hover:text-red-500 transition text-xl"
+            className="btn position-absolute top-0 end-0 m-2 p-1 btn-light "
           >
-            🗑️
+            <FaTrash />
           </button>
 
-          {/* ---------------- Flashcard ---------------- */}
+          {/* Flashcard */}
           <div
             onClick={toggleFlip}
-            className="
-              w-[500px] min-h-[300px] h-auto
-              bg-white border rounded-xl shadow-lg
-              cursor-pointer select-none
-              flex items-center justify-center text-center
-              p-6 mt-8
-              transition-transform duration-300
-              hover:scale-105
-            "
+            className="card mx-auto my-3"
+            style={{ maxWidth: "500px", minHeight: "250px", cursor: "pointer" }}
           >
-            {flipped ? (
-              <div>
-                <strong className="text-lg">Одговор</strong>
-                <p className="mt-2 text-gray-700">
-                  {flashcards[currentIndex].answer}
-                </p>
-              </div>
-            ) : (
-              <div>
-                <strong className="text-lg">Прашање</strong>
-                <p className="mt-2 text-gray-700">
-                  {flashcards[currentIndex].question}
-                </p>
-              </div>
-            )}
+            <div className="card-body d-flex flex-column justify-content-center align-items-center text-center">
+              {flipped ? (
+                <>
+                  <h5 className="card-title">Одговор</h5>
+                  <p className="card-text">{flashcards[currentIndex].answer}</p>
+                </>
+              ) : (
+                <>
+                  <h5 className="card-title">Прашање</h5>
+                  <p className="card-text">{flashcards[currentIndex].question}</p>
+                </>
+              )}
+            </div>
           </div>
 
-          {/* ---------------- Navigation buttons ---------------- */}
-          <div className="flex gap-4 mt-6">
-            <button
-              onClick={prevCard}
-              className="bg-gray-200 px-5 py-2 rounded-lg hover:bg-gray-300 transition"
-            >
-              Претходно
-            </button>
-            <button
-              onClick={nextCard}
-              className="bg-gray-200 px-5 py-2 rounded-lg hover:bg-gray-300 transition"
-            >
-              Следно
-            </button>
+          {/* Navigation */}
+          <div className="d-flex justify-content-center gap-2 flex-wrap mb-2">
+            <button className="btn btn-secondary" onClick={prevCard}>Претходно</button>
+            <button className="btn btn-secondary" onClick={nextCard}>Следно</button>
           </div>
 
-          {/* ---------------- Counter ---------------- */}
-          <p className="mt-3 text-sm text-gray-600">
+          {/* Counter */}
+          <p className="text-center text-muted mb-3">
             {currentIndex + 1} / {flashcards.length}
           </p>
-        </>
+        </div>
       )}
     </div>
   );

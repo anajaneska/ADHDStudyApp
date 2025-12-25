@@ -1,22 +1,32 @@
 import React from "react";
-import OrganizationToDoList from "../components/ToDoList/todolistorg.js";
-import CalendarView from "../components/Calendar/calendar.js";
+import OrganizationToDoList from "../components/ToDoList/todolistorg";
+import CalendarView from "../components/Calendar/calendar";
 
 export default function OrganizationPage() {
   return (
-    <div className="flex w-full h-screen bg-gray-100 overflow-hidden">
-      {/* Left side – To-Do List */}
-      <div className="w-1/2 p-6 overflow-y-auto bg-white shadow-xl border-r border-gray-200">
-      <br/>
-      <br/>
-        <OrganizationToDoList />
-      </div>
+    <div className="container-fluid pt-5 px-3">
+      <div
+        className="row g-4"
+        style={{
+          maxWidth: "1600px",
+          margin: "0 auto",
+          minHeight: "calc(100vh - 80px)",
+        }}
+      >
+        {/* LEFT – TODO (same size, pushed left) */}
+        <div className="col-12 col-md-4 col-lg-5">
+          <OrganizationToDoList />
+        </div>
 
-      {/* Right side – Calendar */}
-      <div className="w-1/2 p-6 overflow-y-auto bg-white shadow-xl">
-      <br/>
-      <br/>
-        <CalendarView />
+        {/* RIGHT – CALENDAR (wider + full visible height) */}
+        <div className="col-12 col-md-8 col-lg-7">
+          <div
+            className="bg-white rounded-3 shadow p-3 h-100"
+            style={{ minHeight: "calc(100vh - 120px)" }}
+          >
+            <CalendarView />
+          </div>
+        </div>
       </div>
     </div>
   );

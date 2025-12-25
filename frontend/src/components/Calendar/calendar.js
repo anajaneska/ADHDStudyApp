@@ -171,61 +171,90 @@ export default function CalendarView() {
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-4 w-full h-[80vh]">
-      {loading && <p className="text-center text-gray-500">Вчитување задачи...</p>}
-      {error && <p className="text-center text-red-500">{error}</p>}
-
-      {!loading && !error && (
-        <DnDCalendar
-          localizer={localizer}
-          events={events}
-          startAccessor="start"
-          endAccessor="end"
-          selectable
-          resizable
-          draggableAccessor={(event) => {
-            const t = tasks.find(t => t.id === event.taskId);
-            return t?.recurrenceType === "NONE" && event.type === "task";
+  <div className="container-fluid h-100 px-0">
+    <div className="row h-100 g-0">
+      <div className="col-12 h-100">
+        <div
+          className="bg-white shadow rounded p-3 h-100 d-flex flex-column"
+          style={{
+            minHeight: "calc(100vh - 120px)", // visible area (header-safe)
           }}
-          onEventDrop={onEventDrop}
-          onEventResize={onEventResize}
-          onSelectSlot={handleSelectSlot}
-          onSelectEvent={handleSelectEvent}
-          view={currentView}
-          onView={setCurrentView}
-          views={[Views.DAY, Views.WEEK, Views.MONTH]}
-          popup
-          messages={messagesMk}
-          culture="mk-MK"
-          style={{ height: "100%" }}
-          eventPropGetter={(event) => {
-              const t = tasks.find(t => t.id === event.taskId);
-              const isArchived = t?.archived;
+        >
+          {/* Status messages */}
+          {loading && (
+            <div className="text-center text-muted my-3">
+              Вчитување задачи...
+            </div>
+          )}
 
-              return {
-                style: {
-                  backgroundColor: event.color,
-                  color: "white",
-                  borderRadius: "6px",
-                  border: "none",
-                  padding: "2px 6px",
-                  textDecoration: isArchived ? "line-through" : "none",
-                  opacity: isArchived ? 0.6 : 1, // optional: dim archived tasks
-                },
-              };
+          {error && (
+            <div className="text-center text-danger my-3">
+              {error}
+            </div>
+          )}
+
+          {/* Calendar */}
+          {!loading && !error && (
+            <div className="flex-grow-1">
+              <DnDCalendar
+                localizer={localizer}
+                events={events}
+                startAccessor="start"
+                endAccessor="end"
+                selectable
+                resizable
+                draggableAccessor={(event) => {
+                  const t = tasks.find(t => t.id === event.taskId);
+                  return t?.recurrenceType === "NONE" && event.type === "task";
+                }}
+                onEventDrop={onEventDrop}
+                onEventResize={onEventResize}
+                onSelectSlot={handleSelectSlot}
+                onSelectEvent={handleSelectEvent}
+                view={currentView}
+                onView={setCurrentView}
+                views={[Views.DAY, Views.WEEK, Views.MONTH]}
+                popup
+                messages={messagesMk}
+                culture="mk-MK"
+                style={{ height: "100%", minHeight: "500px" }}
+                eventPropGetter={(event) => {
+                  const t = tasks.find(t => t.id === event.taskId);
+                  const isArchived = t?.archived;
+
+                  return {
+                    style: {
+                      backgroundColor: event.color,
+                      color: "white",
+                      borderRadius: "6px",
+                      border: "none",
+                      padding: "2px 6px",
+                      textDecoration: isArchived ? "line-through" : "none",
+                      opacity: isArchived ? 0.6 : 1,
+                    },
+                  };
+                }}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Modal (portal → header/body safe) */}
+        {modalOpen && (
+          <TaskModal
+            task={activeTask}
+            selectedSlot={selectedSlot}
+            refresh={fetchTasks}
+            onClose={() => {
+              setModalOpen(false);
+              setActiveTask(null);
+              setSelectedSlot(null);
             }}
-
-        />
-      )}
-
-      {modalOpen && (
-        <TaskModal
-          task={activeTask}
-          selectedSlot={selectedSlot}
-          refresh={fetchTasks}
-          onClose={() => { setModalOpen(false); setActiveTask(null); setSelectedSlot(null); }}
-        />
-      )}
+          />
+        )}
+      </div>
     </div>
-  );
+  </div>
+);
+
 }

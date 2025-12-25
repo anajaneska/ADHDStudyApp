@@ -7,31 +7,64 @@ export default function FileViewer({ file }) {
   const [tab, setTab] = useState("summary");
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow-lg">
-      <h1 className="text-2xl font-bold mb-4">{file.fileName}</h1>
+    <div className="bg-white p-4 p-md-5 rounded-3 shadow-sm h-100 d-flex flex-column">
+      <h1 className="h5 h-md4 fw-bold mb-3 mb-md-4">{file.fileName}</h1>
 
       {/* Tabs */}
-      <div className="flex gap-4 border-b pb-2 mb-4">
-        <button onClick={() => setTab("summary")}
-          className={`${tab === "summary" ? "border-b-2 border-blue-500 font-semibold" : ""}`}>
-          Сумаризација
-        </button>
-
-        <button onClick={() => setTab("flashcards")}
-          className={`${tab === "flashcards" ? "border-b-2 border-blue-500 font-semibold" : ""}`}>
-          Картички за Учење
-        </button>
-
-        <button onClick={() => setTab("quiz")}
-          className={`${tab === "quiz" ? "border-b-2 border-blue-500 font-semibold" : ""}`}>
-          Квиз
-        </button>
-      </div>
+      <ul className="nav nav-tabs mb-3" role="tablist">
+        <li className="nav-item" role="presentation">
+          <button
+            className={`nav-link ${tab === "summary" ? "active" : ""}`}
+            onClick={() => setTab("summary")}
+            type="button"
+            role="tab"
+          >
+            Сумаризација
+          </button>
+        </li>
+        <li className="nav-item" role="presentation">
+          <button
+            className={`nav-link ${tab === "flashcards" ? "active" : ""}`}
+            onClick={() => setTab("flashcards")}
+            type="button"
+            role="tab"
+          >
+            Картички за Учење
+          </button>
+        </li>
+        <li className="nav-item" role="presentation">
+          <button
+            className={`nav-link ${tab === "quiz" ? "active" : ""}`}
+            onClick={() => setTab("quiz")}
+            type="button"
+            role="tab"
+          >
+            Квиз
+          </button>
+        </li>
+      </ul>
 
       {/* Tab Content */}
-      {tab === "flashcards" && <FlashcardsViewer key={file.id} file={file} />}
-{tab === "summary" && <SummaryViewer key={file.id} file={file} />}
-{tab === "quiz" && <QuizViewer key={file.id} file={file} />}
+      <div
+        className="tab-content flex-grow-1 overflow-auto"
+        style={{ minHeight: 0 }} // necessary for flex scrolling
+      >
+        {tab === "summary" && (
+          <div className="h-100">
+            <SummaryViewer key={file.id} file={file} />
+          </div>
+        )}
+        {tab === "flashcards" && (
+          <div className="h-100">
+            <FlashcardsViewer key={file.id} file={file} />
+          </div>
+        )}
+        {tab === "quiz" && (
+          <div className="h-100">
+            <QuizViewer key={file.id} file={file} />
+          </div>
+        )}
+      </div>
     </div>
   );
 }

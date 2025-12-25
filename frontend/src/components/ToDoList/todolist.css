@@ -55,3 +55,26 @@
 .task-input .row {
   margin-bottom: 6px;
 }
+
+.todo-container {
+  height: calc(100vh - 40px);
+  display: flex;
+  flex-direction: column;
+}
+@media (max-width: 768px) {
+  .todo-container {
+    height: auto;
+    min-height: 100vh;
+  }
+}
+
+.todo-header {
+  flex-shrink: 0;
+}
+
+.todo-task-list {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+

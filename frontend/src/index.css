@@ -13,3 +13,23 @@ code {
 }
 
 
+html,
+body {
+  height: 100% !important;
+  overflow: hidden !important;
+}
+/* ✅ MOBILE: allow page scrolling */
+@media (max-width: 768px) {
+  html,
+  body {
+    overflow: auto !important;
+  }
+}
+
+/* FileDashboard page: allow full page scrolling */
+body.file-dashboard-page {
+  overflow: auto !important;
+  height: auto !important;
+}
+
+

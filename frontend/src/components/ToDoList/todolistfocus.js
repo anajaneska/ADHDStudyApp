@@ -172,78 +172,83 @@ filteredTasksArray.sort((a, b) => {
 });
 
 return (
-  <div className="container my-4 bg-white rounded-3 shadow p-4">
-    {/* Top bar: title + add button */}
-    {!focusedTaskId && (
-      <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap">
-        <h3 className="text-purple mb-2 mb-md-0">Твоите задачи за денес</h3>
-        <button className="btn btn-primary btn-purple" onClick={() => setShowAddModal(true)}>
-          + Додади задача
+  <div className="container bg-white rounded-3 shadow p-4 todo-container">
+
+    {/* FIXED HEADER */}
+    <div className="todo-header">
+      {!focusedTaskId && (
+        <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+          <h3 className="text-purple mb-2 mb-md-0">Твоите задачи за денес</h3>
+          <button
+            className="btn btn-primary btn-purple"
+            onClick={() => setShowAddModal(true)}
+          >
+            + Додади задача
+          </button>
+        </div>
+      )}
+
+      {/* Filters */}
+      <div className="mb-3">
+        <button
+          className="btn btn-outline-secondary mb-2"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#filterCollapse"
+        >
+          Филтри
         </button>
-      </div>
-    )}
 
-    {/* Filters */}
-    <div className="mb-3">
-      {/* Toggle filter button */}
-      <button
-        className="btn btn-outline-secondary mb-2"
-        type="button"
-        data-bs-toggle="collapse"
-        data-bs-target="#filterCollapse"
-        aria-expanded="false"
-        aria-controls="filterCollapse"
-      >
-        Филтри
-      </button>
-
-      {/* Collapsible filters */}
-      <div className="collapse" id="filterCollapse">
-        <div className="card card-body p-2 shadow-sm">
-          <div className="row g-2 align-items-end">
-            <div className="col-12 col-md-8">
-              <label className="form-label">Тагови</label>
-              <TagPicker selectedTagIds={filterTagIds} onTagChange={setFilterTagIds} tags={tags} />
-            </div>
-            <div className="col-12 col-md-4 text-md-end">
-              <button className="btn btn-secondary w-100 w-md-auto" onClick={() => setFilterTagIds([])}>
-                Ресетирај филтри
-              </button>
+        <div className="collapse" id="filterCollapse">
+          <div className="card card-body p-2 shadow-sm">
+            <div className="row g-2 align-items-end">
+              <div className="col-12 col-md-8">
+                <label className="form-label">Тагови</label>
+                <TagPicker
+                  selectedTagIds={filterTagIds}
+                  onTagChange={setFilterTagIds}
+                  tags={tags}
+                />
+              </div>
+              <div className="col-12 col-md-4 text-md-end">
+                <button
+                  className="btn btn-secondary w-100 w-md-auto"
+                  onClick={() => setFilterTagIds([])}
+                >
+                  Ресетирај филтри
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    {/* Add Task Modal */}
-{/* Add Task Popup */}
-{showAddModal && (
-  <ModalPortal onClose={() => setShowAddModal(false)}>
-    <div className="modal-header border-0 p-0 mb-3">
-      <h5 className="modal-title">Додади задача</h5>
-      <button
-        className="btn-close"
-        onClick={() => setShowAddModal(false)}
-      />
-    </div>
+    {/* ADD TASK MODAL */}
+    {showAddModal && (
+      <ModalPortal onClose={() => setShowAddModal(false)}>
+        <div className="modal-header border-0 p-0 mb-3">
+          <h5 className="modal-title">Додади задача</h5>
+          <button className="btn-close" onClick={() => setShowAddModal(false)} />
+        </div>
 
-    <TaskInput
-      newTask={newTask}
-      setNewTask={setNewTask}
-      addTask={addTask}
-      tags={tags}
-      userId={userId}
-    />
-  </ModalPortal>
-)}
+        <TaskInput
+          newTask={newTask}
+          setNewTask={setNewTask}
+          addTask={addTask}
+          tags={tags}
+          userId={userId}
+        />
+      </ModalPortal>
+    )}
 
-
-
-    {/* Task list */}
-    <div>
+    {/* SCROLLABLE TASK LIST */}
+    <div className="todo-task-list">
       <ul className="list-group list-group-flush">
         {filteredTasksArray.length === 0 ? (
-          <li className="list-group-item text-center text-muted">Нема задачи.</li>
+          <li className="list-group-item text-center text-muted">
+            Нема задачи.
+          </li>
         ) : (
           filteredTasksArray.map((t) => (
             <li key={t.id} className="list-group-item p-2 mb-2">
@@ -265,7 +270,5 @@ return (
     </div>
   </div>
 );
-
-
 
 }

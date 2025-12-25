@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import instance from "../../../custom-axios/axios";
+import { FaTrash } from "react-icons/fa";
 
 export default function QuizViewer({ file }) {
   const [quiz, setQuiz] = useState([]);
@@ -77,9 +78,7 @@ export default function QuizViewer({ file }) {
 
   // Select answer
   const handleSelect = (qIdx, option) => {
-    if (!submitted) {
-      setAnswers({ ...answers, [qIdx]: option });
-    }
+    if (!submitted) setAnswers({ ...answers, [qIdx]: option });
   };
 
   // Submit quiz
@@ -93,29 +92,29 @@ export default function QuizViewer({ file }) {
   };
 
   if (loading)
-    return <p className="text-gray-500 text-center mt-4">Loading...</p>;
+    return <p className="text-center text-muted mt-3">Loading...</p>;
 
   return (
-    <div className="relative w-full max-w-3xl mx-auto p-4">
+    <div className="container py-4">
       {/* Trash button */}
       {quiz.length > 0 && (
-        <div className="flex justify-end mb-4">
+        <div className="d-flex justify-content-end mb-3">
           <button
             onClick={deleteQuiz}
             title="Избриши Квиз"
-            className="text-gray-400 hover:text-red-500 transition text-2xl"
+            className="btn btn-light border"
           >
-            🗑️
+            <FaTrash />
           </button>
         </div>
       )}
 
       {/* Generate quiz button */}
       {!quiz.length && (
-        <div className="text-center mt-8">
+        <div className="text-center my-5">
           <button
             onClick={generateQuiz}
-            className="bg-purple-500 text-white px-6 py-3 rounded-lg hover:bg-purple-600 transition"
+            className="btn btn-primary btn-lg"
           >
             Генерирај Квиз
           </button>
@@ -127,69 +126,64 @@ export default function QuizViewer({ file }) {
         <>
           {/* Score display */}
           {submitted && (
-            <div className="text-xl font-bold mb-6 text-center">
-              Твојот Резултат: {score} / {quiz.length}
+            <div className="text-center mb-4">
+              <h5>Твојот Резултат: {score} / {quiz.length}</h5>
             </div>
           )}
 
-          <div className="space-y-6">
+          <div className="row g-4">
             {quiz.map((q, idx) => {
               const userAnswer = answers[idx];
               const unanswered = submitted && userAnswer === undefined;
 
               return (
-                <div
-                  key={idx}
-                  className="p-6 bg-white shadow-lg rounded-xl flex flex-col gap-4 transition hover:scale-105"
-                >
-                  <p className="text-lg font-semibold">
-                    {idx + 1}. {q.question}
-                  </p>
+                <div key={idx} className="col-12">
+                  <div className="card shadow-sm p-3">
+                    <p className="fw-semibold mb-3">{idx + 1}. {q.question}</p>
 
-                  <ul className="space-y-2">
-                    {q.options.map((opt, i) => {
-                      const isSelected = userAnswer === opt;
-                      const isCorrect = submitted && opt === q.correctAnswer;
-                      const isWrong = submitted && isSelected && opt !== q.correctAnswer;
+                    <div className="list-group">
+                      {q.options.map((opt, i) => {
+                        const isSelected = userAnswer === opt;
+                        const isCorrect = submitted && opt === q.correctAnswer;
+                        const isWrong = submitted && isSelected && opt !== q.correctAnswer;
 
-                      let bgColor = "bg-gray-50";
-                      if (isCorrect) bgColor = "bg-green-200 border border-green-400";
-                      if (isWrong) bgColor = "bg-red-200 border border-red-400";
-                      if (!submitted && isSelected)
-                        bgColor = "bg-blue-100 border border-blue-400";
+                        let bgClass = "list-group-item";
+                        if (isCorrect) bgClass += " list-group-item-success";
+                        if (isWrong) bgClass += " list-group-item-danger";
+                        if (!submitted && isSelected) bgClass += " list-group-item-info";
 
-                      return (
-                        <li
-                          key={i}
-                          onClick={() => handleSelect(idx, opt)}
-                          className={`p-3 rounded cursor-pointer ${bgColor} transition`}
-                        >
-                          {opt}
-                        </li>
-                      );
-                    })}
-                  </ul>
+                        return (
+                          <button
+                            type="button"
+                            key={i}
+                            className={`${bgClass} text-start`}
+                            onClick={() => handleSelect(idx, opt)}
+                          >
+                            {opt}
+                          </button>
+                        );
+                      })}
+                    </div>
 
-                  {/* Feedback */}
-                  {submitted && (
-                    <div className="text-sm mt-2">
-                      {unanswered && (
-                        <span className="text-yellow-600">
-                          ⚠️ Не е одговорено. Правилен одговор: {q.correctAnswer}
-                        </span>
-                      )}
-                      {!unanswered && userAnswer === q.correctAnswer && (
-                        <span className="text-green-700">✅ Правилно!</span>
-                      )}
-                      {!unanswered &&
-                        userAnswer !== q.correctAnswer && (
-                          <span className="text-red-700">
-                            ❌ Погрешно. Твојот одговор: {userAnswer}. Правилен:{" "}
-                            {q.correctAnswer}
+                    {/* Feedback */}
+                    {submitted && (
+                      <div className="mt-2">
+                        {unanswered && (
+                          <span className="text-warning">
+                            ⚠️ Не е одговорено. Правилен одговор: {q.correctAnswer}
                           </span>
                         )}
-                    </div>
-                  )}
+                        {!unanswered && userAnswer === q.correctAnswer && (
+                          <span className="text-success">✅ Правилно!</span>
+                        )}
+                        {!unanswered && userAnswer !== q.correctAnswer && (
+                          <span className="text-danger">
+                            ❌ Погрешно. Твојот одговор: {userAnswer}. Правилен: {q.correctAnswer}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               );
             })}
@@ -197,10 +191,10 @@ export default function QuizViewer({ file }) {
 
           {/* Submit button */}
           {!submitted && (
-            <div className="text-center mt-6">
+            <div className="text-center mt-4">
               <button
                 onClick={handleSubmit}
-                className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition"
+                className="btn btn-success btn-lg"
               >
                 Провери Квиз
               </button>

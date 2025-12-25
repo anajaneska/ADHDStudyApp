@@ -181,13 +181,13 @@ if (cycle === "work") {
         className={`btn ${cycle === "work" ? "btn-purple" : "btn-outline-purple"}`}
         onClick={() => switchCycle("work")}
       >
-        Фокус ({workDuration})
+        Фокус ({workDuration}мин)
       </button>
       <button
         className={`btn ${cycle === "break" ? "btn-purple" : "btn-outline-purple"}`}
         onClick={() => switchCycle("break")}
       >
-        Пауза ({breakDuration})
+        Пауза ({breakDuration}мин)
       </button>
     </div>
 

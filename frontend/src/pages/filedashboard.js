@@ -10,6 +10,14 @@ export default function FileDashboard() {
   const userId = localStorage.getItem("userId");
   const fileInputRef = useRef(null);
 
+   useEffect(() => {
+    // Add class to body when page mounts
+    document.body.classList.add("file-dashboard-page");
+
+    // Remove class on unmount
+    return () => document.body.classList.remove("file-dashboard-page");
+  }, []);
+
   // Load files
   const loadFiles = () => {
     instance
@@ -65,24 +73,31 @@ export default function FileDashboard() {
     }
   };
 
-  return (
-    <div className="flex h-screen bg-gray-100 pt-20">
+ return (
+  <div
+    className="container-fluid bg-light"
+    style={{ height: "calc(100vh - 64px)" }} // space for header
+  >
+    <div className="row h-100">
 
-      {/* Sidebar + Upload */}
-      <div className="flex flex-col border-r bg-white">
-        
+      {/* SIDEBAR */}
+      <div className="col-12 col-md-4 col-lg-3 border-end bg-white d-flex flex-column p-3 overflow-auto">
+
         <button
-          className="m-4 px-4 py-2 text-white rounded-xl shadow"
-          style={{ backgroundColor: "rgba(139, 127, 199, 1)" }}
+          className="btn text-white mb-3 shadow"
+          style={{
+            backgroundColor: "rgba(139, 127, 199, 1)",
+            borderRadius: "12px",
+          }}
           onClick={() => fileInputRef.current.click()}
         >
-          Upload File
+          Прикачи датотека
         </button>
 
         <input
           type="file"
           ref={fileInputRef}
-          className="hidden"
+          className="d-none"
           onChange={handleFileUpload}
         />
 
@@ -93,16 +108,19 @@ export default function FileDashboard() {
         />
       </div>
 
-      {/* Main Viewer */}
-      <div className="flex-1 p-6 overflow-auto">
+      {/* MAIN VIEWER */}
+      <div className="col-12 col-md-8 col-lg-9 p-4 overflow-auto">
         {selectedFile ? (
           <FileViewer key={selectedFile.id} file={selectedFile} />
         ) : (
-          <div className="text-center text-gray-500 mt-20 text-xl">
-            Select a file from the sidebar to begin.
+          <div className="text-center text-muted mt-5 fs-5">
+            Одбери датотека од менито лево за да ја прегледаш.
           </div>
         )}
       </div>
+
     </div>
-  );
+  </div>
+);
+
 }

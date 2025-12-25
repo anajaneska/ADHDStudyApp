@@ -1,29 +1,47 @@
 import React from "react";
+import "./filesidebar.css";
 
-export default function FileSidebar({ files, onSelect, onDelete }) {
+export default function FileSidebar({
+  files,
+  onSelect,
+  onDelete,
+  fileInputRef,
+  onFileUpload,
+}) {
   return (
-    <div className="w-64 bg-white shadow-xl p-4 border-r overflow-y-auto">
-      <h2 className="text-xl font-bold mb-4">Твоите Датотеки</h2>
+    <div className="bg-white shadow p-3 border-end overflow-auto h-100">
+      <h2 className="h5 fw-bold mb-3">Твоите Датотеки</h2>
 
-      <ul className="space-y-2">
+      {/* Upload button */}
+      <button
+        className="btn text-white mb-3 w-100 shadow"
+        style={{
+          backgroundColor: "rgba(139, 127, 199, 1)",
+          borderRadius: "12px",
+        }}
+        onClick={() => fileInputRef.current.click()}
+      >
+        Прикачи датотека
+      </button>
+
+      <ul className="list-unstyled mb-0">
         {files.map((file) => (
           <li
             key={file.id}
-            className="p-3 bg-gray-100 rounded-lg flex justify-between items-center hover:bg-blue-100 transition"
+            className="d-flex justify-content-between align-items-center p-2 mb-2 rounded hover-shadow"
+            style={{ cursor: "pointer" }}
           >
-            <span
-              onClick={() => onSelect(file)}
-              className="cursor-pointer flex-1"
-            >
+            <span className="flex-grow-1" onClick={() => onSelect(file)}>
               📄 {file.fileName}
             </span>
 
             <button
+              type="button"
+              className="btn btn-sm btn-outline-danger ms-2"
               onClick={(e) => {
                 e.stopPropagation(); // prevent selecting file when deleting
                 onDelete(file.id);
               }}
-              className="text-red-500 hover:text-red-700 font-bold ml-2"
             >
               ❌
             </button>

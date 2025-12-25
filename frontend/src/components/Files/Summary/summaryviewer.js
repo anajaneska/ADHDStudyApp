@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState } from "react"; 
 import instance from "../../../custom-axios/axios";
+import { FaTrash } from "react-icons/fa";
 
 export default function SummaryViewer({ file }) {
   const [summary, setSummary] = useState(file.summary?.content || "");
@@ -21,7 +22,7 @@ export default function SummaryViewer({ file }) {
 
   // Delete summary
   const deleteSummary = async () => {
-    if (!window.confirm("Are you sure you want to delete the summary?")) return;
+    if (!window.confirm("Дали сте сигурни дека сакате да ја избришете сумаризацијата?")) return;
 
     setDeleting(true);
     try {
@@ -33,34 +34,43 @@ export default function SummaryViewer({ file }) {
   };
 
   return (
-    <div className="relative">
+    <div
+      className="position-relative"
+      style={{
+        fontFamily:
+          "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif",
+      }}
+    >
       {/* Generate button */}
       {!summary && (
         <button
           onClick={generateSummary}
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+          className="btn btn-primary mb-3"
           disabled={loading}
         >
-          {loading ? "Generating..." : "Generate Summary"}
+          {loading ? "Генерирање..." : "Генерирај сумаризација"}
         </button>
       )}
 
       {/* Summary display */}
       {summary && (
-        <div className="mt-4 relative">
+        <div className="card position-relative h-100 overflow-auto">
           {/* Trash icon (top-right) */}
           <button
             onClick={deleteSummary}
             title="Delete Summary"
-            className="absolute top-2 right-2 text-gray-400 hover:text-red-500 transition text-xl"
+            className="btn position-absolute top-0 end-0 m-2 p-0"
+            style={{ fontSize: "1.2rem" }}
             disabled={deleting}
           >
-            🗑️
+            <FaTrash />
           </button>
 
           {/* Summary content */}
-          <div className="bg-gray-50 p-4 rounded-lg whitespace-pre-wrap">
-            {summary}
+          <div className="card-body">
+            <pre className="mb-0" style={{ whiteSpace: "pre-wrap" }}>
+              {summary}
+            </pre>
           </div>
         </div>
       )}
