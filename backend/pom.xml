@@ -69,6 +69,11 @@
             <version>0.12.6</version>
             <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <groupId>com.google.genai</groupId>
+            <artifactId>google-genai</artifactId>
+            <version>0.5.0</version>
+        </dependency>
 
         <dependency>
             <groupId>com.h2database</groupId>
@@ -145,6 +150,10 @@
             <groupId>dev.langchain4j</groupId>
             <artifactId>langchain4j</artifactId>
             <version>1.8.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
         </dependency>
     </dependencies>
 

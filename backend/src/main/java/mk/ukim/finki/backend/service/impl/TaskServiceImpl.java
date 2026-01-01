@@ -1,6 +1,8 @@
 package mk.ukim.finki.backend.service.impl;
 
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import mk.ukim.finki.backend.model.*;
 import mk.ukim.finki.backend.model.dto.TaskCreateRequest;
@@ -12,11 +14,13 @@ import mk.ukim.finki.backend.repository.*;
 import mk.ukim.finki.backend.service.TagService;
 import mk.ukim.finki.backend.service.TaskService;
 import mk.ukim.finki.backend.service.UserService;
-import mk.ukim.finki.backend.service.impl.AiServiceImpl.AiBreakdownServiceHF;
-import mk.ukim.finki.backend.service.impl.AiServiceImpl.AiEstimationServiceHF;
+import mk.ukim.finki.backend.service.impl.AiServiceImpl.TaskEstimationService;
+import mk.ukim.finki.backend.service.impl.AiServiceImpl.GeminiAIService;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -25,12 +29,14 @@ public class TaskServiceImpl implements TaskService {
 
     private final TaskRepository taskRepository;
     private final SubtaskRepository subtaskRepository;
-    private final AiEstimationServiceHF aiEstimationService;
-    private final AiBreakdownServiceHF aiBreakdownService;
+    private final TaskEstimationService aiEstimationService;
     private final TagRepository tagRepository;
     private final TaskCompletionRepository taskCompletionRepository;
     private final UserService userService;
     private final TagService tagService;
+
+    private final GeminiAIService geminiAIService;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
 
     @Override
@@ -175,45 +181,42 @@ public class TaskServiceImpl implements TaskService {
     }
 
 
+    @Override
     public Task estimateTaskTime(Long taskId) {
-        Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new TaskDoesNotExistException(taskId));
-
-        if (!task.getSubtasks().isEmpty()) {
-            int sum = task.getSubtasks()
-                    .stream()
-                    .mapToInt(st -> {
-                        if (st.getEstimatedMinutes() != null)
-                            return st.getEstimatedMinutes();
-
-                        int est = aiEstimationService.estimateMinutes(st.getTitle(), st.getDescription());
-                        st.setEstimatedMinutes(est);
-                        subtaskRepository.save(st);
-                        return est;
-                    })
-                    .sum();
-
-            task.setEstimatedMinutes(sum);
-        } else {
-            int estimate = aiEstimationService.estimateMinutes(task.getTitle(), task.getDescription());
-            task.setEstimatedMinutes(estimate);
-        }
-
-        return taskRepository.save(task);
+        return aiEstimationService.estimateTaskTime(taskId);
     }
 
+    @Override
     public Task breakdownTask(Long taskId) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new TaskDoesNotExistException(taskId));
 
-        List<Subtask> subtasks = aiBreakdownService.generateSubtasks(task.getTitle(), task.getDescription());
+        try {
+            // Call Gemini AI for subtasks
+            String subtasksJson = geminiAIService.generateSubtasks(task.getTitle(), task.getDescription());
 
-        for (Subtask st : subtasks) {
-            st.setTask(task);
+            // Parse JSON array
+            JsonNode subtasksArray = objectMapper.readTree(subtasksJson);
+            if (!subtasksArray.isArray()) {
+                throw new IOException("AI did not return a JSON array of subtasks");
+            }
+
+            List<Subtask> subtasks = new ArrayList<>();
+            for (JsonNode node : subtasksArray) {
+                Subtask st = new Subtask();
+                st.setTitle(node.path("title").asText("Untitled"));
+                st.setDescription(node.path("description").asText(""));
+                st.setCompleted(false);
+                st.setTask(task);
+                subtasks.add(st);
+            }
+
+            task.getSubtasks().addAll(subtasks);
+            return taskRepository.save(task);
+
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to generate subtasks via AI: " + e.getMessage(), e);
         }
-
-        task.getSubtasks().addAll(subtasks);
-        return taskRepository.save(task);
     }
 
 }

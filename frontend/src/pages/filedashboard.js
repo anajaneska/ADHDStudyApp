@@ -8,7 +8,7 @@ export default function FileDashboard() {
   const [selectedFile, setSelectedFile] = useState(null);
 
   const userId = localStorage.getItem("userId");
-  const fileInputRef = useRef(null);
+
 
    useEffect(() => {
     // Add class to body when page mounts
@@ -52,27 +52,6 @@ export default function FileDashboard() {
   }
 };
 
-  // Upload File
-  const handleFileUpload = async (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    const formData = new FormData();
-    formData.append("file", file);
-
-    try {
-      await instance.post(`/files/${userId}/upload`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      loadFiles(); // refresh list after upload
-    } catch (err) {
-      console.error("Upload error:", err);
-    }
-  };
-
  return (
   <div
     className="container-fluid bg-light"
@@ -87,10 +66,12 @@ export default function FileDashboard() {
 <div style={{ height: "48px" }} className="mb-3" />
 
         <FileSidebar
-          files={files}
-          onSelect={handleFileClick}
-          onDelete={handleDelete}
-        />
+  files={files}
+  onSelect={handleFileClick}
+  onDelete={handleDelete}
+  userId={userId}
+  loadFiles={loadFiles}
+/>
       </div>
 
       {/* MAIN VIEWER */}

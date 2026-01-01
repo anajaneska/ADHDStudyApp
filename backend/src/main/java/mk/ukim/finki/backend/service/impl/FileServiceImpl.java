@@ -9,7 +9,6 @@ import mk.ukim.finki.backend.repository.DocumentRepository;
 import mk.ukim.finki.backend.repository.UserRepository;
 import mk.ukim.finki.backend.service.FileService;
 import mk.ukim.finki.backend.service.FlashcardService;
-import mk.ukim.finki.backend.service.SummaryService;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -27,7 +26,7 @@ public class FileServiceImpl implements FileService {
 
     private final DocumentRepository documentRepository;
     private final UserRepository userRepository;
-    private final SummaryService summaryService;
+    private final SummaryServiceImpl summaryService;
     private final FlashcardService flashcardService;
 
     private static final String UPLOAD_DIR = "uploads";

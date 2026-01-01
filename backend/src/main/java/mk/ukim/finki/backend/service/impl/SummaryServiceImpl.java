@@ -4,51 +4,66 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import mk.ukim.finki.backend.model.Document;
 import mk.ukim.finki.backend.model.Summary;
+
 import mk.ukim.finki.backend.model.exeptions.DocumentDoesNotExistException;
 import mk.ukim.finki.backend.model.exeptions.SummaryDoesNotExistException;
 import mk.ukim.finki.backend.repository.DocumentRepository;
 import mk.ukim.finki.backend.repository.SummaryRepository;
-import mk.ukim.finki.backend.service.AiService;
 import mk.ukim.finki.backend.service.SummaryService;
-import mk.ukim.finki.backend.service.impl.AiServiceImpl.ChatModelServiceHF;
+import mk.ukim.finki.backend.service.impl.AiServiceImpl.ExtractTextService;
+import mk.ukim.finki.backend.service.impl.AiServiceImpl.GeminiAIService;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class SummaryServiceImpl implements SummaryService {
 
     private final DocumentRepository documentRepository;
     private final SummaryRepository summaryRepository;
-    private final AiService aiService;
-    private final ChatModelServiceHF chatModelServiceHF;
+    private final GeminiAIService geminiAIService;
+    private final ExtractTextService extractTextService;
 
-    @Override
-    public Summary generateAndSaveSummary(Long fileId, Long userId) throws IOException {
-        Document document = documentRepository.findByIdAndUserId(fileId, userId)
-                .orElseThrow(() -> new DocumentDoesNotExistException(fileId));
 
-        String text = aiService.extractTextFromDocument(document.getFileUrl());
-        String summaryText = chatModelServiceHF.generateSummary(text);
 
-        Summary summary = new Summary();
-        summary.setDocument(document);
+    public Summary generateAndSaveSummary(Long documentId, Long userId) throws IOException {
+
+        Document document = documentRepository
+                .findByIdAndUserId(documentId, userId)
+                .orElseThrow(() -> new DocumentDoesNotExistException(documentId));
+
+        String text = extractTextService.loadFileText(document);
+
+        String summaryText = geminiAIService.summarize(text);
+
+        if (summaryText == null || summaryText.isBlank()) {
+            throw new RuntimeException("Gemini summarization failed");
+        }
+
+        Summary summary = document.getSummary();
+        if (summary == null) {
+            summary = new Summary();
+            summary.setDocument(document);
+            document.setSummary(summary);
+        }
+
         summary.setContent(summaryText);
+        documentRepository.save(document);
 
-
-        return summaryRepository.save(summary);
+        return summary;
     }
 
-    @Override
+
     public Summary getSummary(Long fileId, Long userId) {
-        return summaryRepository.findByDocumentIdAndDocumentUserId(fileId, userId)
+        return summaryRepository
+                .findByDocumentIdAndDocumentUserId(fileId, userId)
                 .orElseThrow(() -> new SummaryDoesNotExistException(fileId));
     }
-    @Override
+
     @Transactional
     public void deleteSummary(Long fileId) {
         summaryRepository.deleteByDocumentId(fileId);
     }
 }
+

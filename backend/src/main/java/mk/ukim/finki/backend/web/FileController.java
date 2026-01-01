@@ -3,9 +3,12 @@ package mk.ukim.finki.backend.web;
 import lombok.RequiredArgsConstructor;
 import mk.ukim.finki.backend.model.*;
 
-import mk.ukim.finki.backend.service.*;
+import mk.ukim.finki.backend.service.FileService;
+import mk.ukim.finki.backend.service.FlashcardService;
+import mk.ukim.finki.backend.service.QuizService;
+import mk.ukim.finki.backend.service.SummaryService;
+import mk.ukim.finki.backend.service.impl.SummaryServiceImpl;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -44,7 +47,7 @@ public class FileController {
 
     //SUMMARY SERVICE
     @PostMapping("/{userId}/{fileId}/summarize")
-    public ResponseEntity<Summary> summarizeFile(@PathVariable Long userId,@PathVariable Long fileId) throws IOException {
+    public ResponseEntity<Summary> summarizeFile(@PathVariable Long userId, @PathVariable Long fileId) throws IOException {
         Summary summary = summaryService.generateAndSaveSummary(fileId, userId);
         return ResponseEntity.ok(summary);
     }
